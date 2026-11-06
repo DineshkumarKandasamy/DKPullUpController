@@ -257,6 +257,7 @@ open class DKPullUpController: UIViewController {
         configurationDidChange()
     }
 
+    /// Installs the configured content view and pins it to the sheet's bounds.
     private func updatePullUpContentView() {
         guard isViewLoaded else { return }
         NSLayoutConstraint.deactivate(contentViewConstraints)
@@ -275,11 +276,13 @@ open class DKPullUpController: UIViewController {
         NSLayoutConstraint.activate(contentViewConstraints)
     }
 
+    /// Keeps the built-in drag handle above the sheet's content after layout.
     open override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         view.bringSubviewToFront(defaultDragHandle)
     }
 
+    /// Applies the configured appearance and visibility to the built-in handle.
     func updateDefaultDragHandle() {
         guard isViewLoaded else { return }
         defaultDragHandle.backgroundColor = configuration.defaultDragHandleColor
@@ -290,6 +293,7 @@ open class DKPullUpController: UIViewController {
         defaultDragHandle.isHidden = usesCustomDragHandle || !configuration.showsDefaultDragHandle
     }
 
+    /// Clamps a handle dimension to a finite, nonnegative value.
     private func validHandleDimension(_ value: CGFloat) -> CGFloat {
         value.isFinite ? max(0, value) : 0
     }

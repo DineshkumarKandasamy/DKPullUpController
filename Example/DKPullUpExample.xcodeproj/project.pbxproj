@@ -13,6 +13,8 @@
 		A10000000000000000000004 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* SceneDelegate.swift */; };
 		A10000000000000000000005 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000005 /* main.m */; };
 		A10000000000000000000006 /* DKPullUpController in Frameworks */ = {isa = PBXBuildFile; productRef = A90000000000000000000003 /* DKPullUpController */; };
+		A10000000000000000000007 /* ExampleSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000007 /* ExampleSheetViewController.swift */; };
+		A10000000000000000000008 /* ExampleSheetViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000008 /* ExampleSheetViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +24,9 @@
 		A20000000000000000000004 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		A20000000000000000000005 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		A20000000000000000000006 /* DKPullUpObjCExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = DKPullUpObjCExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000000000000000000007 /* ExampleSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleSheetViewController.swift; sourceTree = "<group>"; };
+		A20000000000000000000008 /* ExampleSheetViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ExampleSheetViewController.m; sourceTree = "<group>"; };
+		A20000000000000000000009 /* ExampleSheetViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ExampleSheetViewController.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +64,7 @@
 				A20000000000000000000001 /* AppDelegate.swift */,
 				A20000000000000000000004 /* SceneDelegate.swift */,
 				A20000000000000000000002 /* ExampleViewController.swift */,
+				A20000000000000000000007 /* ExampleSheetViewController.swift */,
 			);
 			path = DKPullUpExample;
 			sourceTree = "<group>";
@@ -76,6 +82,8 @@
 			isa = PBXGroup;
 			children = (
 				A20000000000000000000005 /* main.m */,
+				A20000000000000000000008 /* ExampleSheetViewController.m */,
+				A20000000000000000000009 /* ExampleSheetViewController.h */,
 			);
 			path = DKPullUpObjCExample;
 			sourceTree = "<group>";
@@ -160,6 +168,7 @@
 				A10000000000000000000001 /* AppDelegate.swift in Sources */,
 				A10000000000000000000004 /* SceneDelegate.swift in Sources */,
 				A10000000000000000000002 /* ExampleViewController.swift in Sources */,
+				A10000000000000000000007 /* ExampleSheetViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -168,6 +177,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000005 /* main.m in Sources */,
+				A10000000000000000000008 /* ExampleSheetViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
