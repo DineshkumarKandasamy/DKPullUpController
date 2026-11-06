@@ -135,31 +135,158 @@ The controller's `moveToVisibleHeight:animated:completion:`, `removeAnimated:com
 
 ## Configuration
 
-Set `configuration` before or after adding the sheet. Changes update its layout and interaction settings.
+`DKPullUpConfiguration` contains the layout, gesture, drag-handle, and animation settings. Assign it before or after adding the sheet; changes are applied to a loaded sheet.
 
-| Setting | Default | Description |
+```swift
+var configuration = DKPullUpConfiguration()
+configuration.layoutMode = .bottom
+configuration.horizontalAlignment = .trailing
+configuration.horizontalOffset = 12
+configuration.bottomInset = 20
+configuration.isDraggingEnabled = true
+configuration.isScrollDraggingEnabled = true
+configuration.isSnappingEnabled = true
+configuration.allowsScrollDragBounce = false
+configuration.maximumNumberOfTouches = 1
+configuration.showsDefaultDragHandle = true
+configuration.defaultDragHandleColor = .systemTeal
+configuration.defaultDragHandleWidth = 48
+configuration.defaultDragHandleHeight = 6
+configuration.defaultDragHandleCornerRadius = 3
+configuration.defaultDragHandleTopInset = 10
+configuration.presentationDuration = 0.3
+configuration.dismissalDuration = 0.3
+configuration.movementDuration = 0.3
+configuration.minimumSnapDuration = 0.08
+configuration.maximumSnapDuration = 0.3
+configuration.usesVelocityForSnapDuration = true
+configuration.scrollTopTolerance = 0.5
+
+sheet.configuration = configuration
+```
+
+### Configuration properties
+
+| Property | Default | Description |
 | --- | --- | --- |
-| `layoutMode` | `.automatic` | Use bottom layout in portrait-shaped parents and side layout in landscape-shaped parents. `.bottom` and `.side` force either mode. |
-| `horizontalAlignment` | `.center` | Align the bottom sheet to the leading edge, center, or trailing edge. |
-| `horizontalOffset`, `bottomInset` | `0` | Position the bottom sheet within its parent. |
-| `isDraggingEnabled` | `true` | Enable the sheet's own pan gesture. |
-| `isScrollDraggingEnabled` | `true` | Allow an attached scroll view to move the sheet. |
-| `isSnappingEnabled` | `true` | Settle on a snap position when a drag ends. |
-| `allowsScrollDragBounce` | `false` | Allow scroll-driven movement beyond snap positions by `bounceOffset`. |
-| `maximumNumberOfTouches` | `1` | Maximum touches accepted by the sheet pan gesture. |
-| `showsDefaultDragHandle` | `true` | Show the built-in handle when no custom handle is selected. |
-| `defaultDragHandleColor` | `.tertiaryLabel` | Color of the built-in handle. |
-| `defaultDragHandleWidth`, `defaultDragHandleHeight` | `40`, `5` | Size of the built-in handle in points. |
-| `defaultDragHandleCornerRadius` | `2.5` | Corner radius of the built-in handle in points. |
-| `defaultDragHandleTopInset` | `10` | Distance from the sheet's top edge in points. |
-| `presentationDuration`, `dismissalDuration`, `movementDuration` | `0.3` | Animation durations in seconds. |
-| `minimumSnapDuration`, `maximumSnapDuration` | `0.08`, `0.3` | Duration bounds in seconds for release animations. |
-| `usesVelocityForSnapDuration` | `true` | Scale release duration by distance and speed. When false or velocity is zero, use the maximum duration. |
-| `scrollTopTolerance` | `0.5` | Allowance in points when determining whether the scroll view is at its adjusted top. |
+| `layoutMode` | `.automatic` | `.automatic` uses side layout when the parent is wider than tall; otherwise it uses bottom layout. `.bottom` and `.side` force a layout. Side layout uses `preferredLandscapeFrame` and disables dragging. |
+| `horizontalAlignment` | `.center` | Bottom-layout alignment: `.leading`, `.center`, or `.trailing`. Leading/trailing respect right-to-left layout direction. |
+| `horizontalOffset` | `0` | Horizontal position offset in points. Edge-aligned offsets move inward; centered offsets move right. |
+| `bottomInset` | `0` | Distance above the parent's bottom edge used as the sheet's reference edge. Safe-area insets are not applied automatically. |
+| `isDraggingEnabled` | `true` | Enables the sheet's own pan gesture. |
+| `isScrollDraggingEnabled` | `true` | Enables dragging the sheet through an attached scroll view. |
+| `isSnappingEnabled` | `true` | Settles at a snap point after a drag. When disabled, the sheet remains at its bounded release height. |
+| `allowsScrollDragBounce` | `false` | Allows scroll-driven drags to extend beyond the snap range by `bounceOffset`. |
+| `maximumNumberOfTouches` | `1` | Maximum touches accepted by the sheet pan gesture. Values below one are treated as one. |
+| `showsDefaultDragHandle` | `true` | Shows the built-in handle when a custom handle has not been selected. |
+| `defaultDragHandleColor` | `.tertiaryLabel` | Built-in handle color. |
+| `defaultDragHandleWidth` | `40` | Built-in handle width in points. Negative and non-finite values become zero. |
+| `defaultDragHandleHeight` | `5` | Built-in handle height in points. Negative and non-finite values become zero. |
+| `defaultDragHandleCornerRadius` | `2.5` | Built-in handle corner radius in points. Negative and non-finite values become zero. |
+| `defaultDragHandleTopInset` | `10` | Distance from the sheet's top edge to the built-in handle. Negative and non-finite values become zero. |
+| `presentationDuration` | `0.3` | Presentation animation duration in seconds. |
+| `dismissalDuration` | `0.3` | Dismissal animation duration in seconds. |
+| `movementDuration` | `0.3` | Duration for programmatic moves and preferred-frame updates. |
+| `minimumSnapDuration` | `0.08` | Minimum release-animation duration in seconds, limited to `maximumSnapDuration`. |
+| `maximumSnapDuration` | `0.3` | Maximum release-animation duration in seconds. |
+| `usesVelocityForSnapDuration` | `true` | Calculates release duration from distance and speed. When disabled, the maximum duration is used. |
+| `scrollTopTolerance` | `0.5` | Allowance in points when deciding whether an attached scroll view is at its adjusted top. |
 
-Side layout uses `preferredLandscapeFrame` and disables dragging. Returning to bottom layout restores the closest snap position when snapping is enabled. In bottom layout, `bounceOffset` controls the additional drag range, and `skipPointVelocity` controls when the release position is projected along the swipe direction.
+Objective-C uses matching properties on `DKPullUpController` instead of the Swift-only `configuration` struct:
 
-Override `pullUpWillMove(to:)`, `pullUpDidMove(to:)`, and `pullUpDidDrag(to:)` to observe movement. Override `targetSnapPoint(for:velocity:points:)`, `snapAnimationDuration(from:to:velocity:)`, `shouldReceivePullUpTouch(_:)`, or `shouldDragPullUp(from:translation:)` to customize gesture behavior. Override `animatePullUp(action:duration:animations:completion:)` for custom animations; run the animations and call the supplied completion, including for zero-duration requests.
+```objc
+sheet.layoutMode = DKPullUpLayoutModeBottom;
+sheet.horizontalAlignment = DKPullUpHorizontalAlignmentTrailing;
+sheet.horizontalOffset = 12;
+sheet.bottomInset = 20;
+sheet.isDraggingEnabled = YES;
+sheet.isScrollDraggingEnabled = YES;
+sheet.isSnappingEnabled = YES;
+sheet.allowsScrollDragBounce = NO;
+sheet.maximumNumberOfTouches = 1;
+sheet.showsDefaultDragHandle = YES;
+sheet.pullUpDefaultDragHandleColor = UIColor.systemTealColor;
+sheet.pullUpDefaultDragHandleWidth = 48;
+sheet.pullUpDefaultDragHandleHeight = 6;
+sheet.pullUpDefaultDragHandleCornerRadius = 3;
+sheet.pullUpDefaultDragHandleTopInset = 10;
+sheet.presentationDuration = 0.3;
+sheet.dismissalDuration = 0.3;
+sheet.movementDuration = 0.3;
+sheet.minimumSnapDuration = 0.08;
+sheet.maximumSnapDuration = 0.3;
+sheet.usesVelocityForSnapDuration = YES;
+sheet.scrollTopTolerance = 0.5;
+```
+
+### Sheet sizing and snap options
+
+These are subclass overrides in Swift. In Objective-C, use the corresponding `pullUp...` properties when configuring a controller instance.
+
+```swift
+final class DetailsSheet: DKPullUpController {
+    override var preferredPullUpSize: CGSize {
+        CGSize(width: 360, height: 600)
+    }
+
+    override var preferredLandscapeFrame: CGRect {
+        CGRect(x: 24, y: 24, width: 360, height: 700)
+    }
+
+    override var middleSnapPoints: [CGFloat] { [280, 420] }
+    override var bounceOffset: CGFloat { 40 }
+    override var skipPointVelocity: CGFloat { 700 }
+}
+```
+
+| Swift customization | Default | Objective-C property | Description |
+| --- | --- | --- | --- |
+| `preferredPullUpSize` | Parent width by `400` points | `pullUpPreferredSize` | Bottom-layout size. Width is limited to the parent; height is the maximum snap height. |
+| `preferredLandscapeFrame` | 16-point inset; width at most `360` | `pullUpPreferredLandscapeFrame` | Side-layout frame in parent coordinates. Side layout disables dragging. |
+| `middleSnapPoints` | `[]` | `pullUpIntermediateSnapPoints` | Additional visible heights, excluding the initial and maximum heights. Values are bounded, sorted, and deduplicated. |
+| `bounceOffset` | `0` | No Objective-C property | Extra drag distance beyond the snap range. Scroll-driven drags use it only when `allowsScrollDragBounce` is enabled. |
+| `skipPointVelocity` | `700` points/second | No Objective-C property | Absolute release speed above which the default target selection projects the release position. |
+
+The initial snap height is passed to `add(to:initialVisibleHeight:animated:completion:)`. The initial height, `middleSnapPoints`, and preferred height are combined into `snapPoints`; non-finite values are excluded, and positions are bounded, sorted, and deduplicated. Call `updatePreferredFrame(animated:)` after changing overridden sizes or snap points. `pullUpSnapPoints` exposes the same positions as `NSNumber` values to Objective-C.
+
+### Interaction and animation hooks
+
+Override these methods in a Swift subclass to observe or customize behavior:
+
+```swift
+final class CustomSheet: DKPullUpController {
+    override func pullUpWillMove(to visibleHeight: CGFloat) {
+        print("Moving to \(visibleHeight)")
+    }
+
+    override func pullUpDidMove(to visibleHeight: CGFloat) { }
+    override func pullUpDidDrag(to visibleHeight: CGFloat) { }
+
+    override func targetSnapPoint(
+        for visibleHeight: CGFloat, velocity: CGFloat, points: [CGFloat]
+    ) -> CGFloat {
+        points.min(by: { abs($0 - visibleHeight) < abs($1 - visibleHeight) }) ?? visibleHeight
+    }
+
+    override func snapAnimationDuration(
+        from visibleHeight: CGFloat, to target: CGFloat, velocity: CGFloat
+    ) -> TimeInterval {
+        0.2
+    }
+
+    override func shouldReceivePullUpTouch(_ touch: UITouch) -> Bool {
+        true
+    }
+
+    override func shouldDragPullUp(from scrollView: UIScrollView, translation: CGFloat) -> Bool {
+        translation < 0 || scrollView.contentOffset.y <= -scrollView.adjustedContentInset.top
+    }
+}
+```
+
+The additional overridable methods are `animatePullUp(action:duration:animations:completion:)` for custom presentation, dismissal, and movement animations. An override must perform `animations` and call `completion` when supplied, including for a zero-duration request. Objective-C clients can call the exposed configuration and controller methods, but cannot subclass this Swift controller; use a Swift subclass when custom override behavior is needed.
+
+`visibleHeight`, `snapPoints`, and `pullUpPanGestureRecognizer` are read-only state. The pan recognizer is available after the view loads; keep its existing target and delegate intact. Use `setDragHandleView(_:)` to move it to a descendant view, or pass `nil` to restore the default root-view gesture. Use `attach(scrollView:)` and `detachScrollView()` to coordinate scrolling. For short scroll content that should still initiate sheet drags, set `alwaysBounceVertical = true`.
 
 All controller operations must run on the main actor.
 
