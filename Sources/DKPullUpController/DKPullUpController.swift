@@ -150,6 +150,30 @@ open class DKPullUpController: UIViewController {
         get { configuration.backgroundBlurStyle }
         set { configuration.backgroundBlurStyle = newValue }
     }
+    @objc public var isBackgroundCardEffectEnabled: Bool {
+        get { configuration.isBackgroundCardEffectEnabled }
+        set { configuration.isBackgroundCardEffectEnabled = newValue }
+    }
+    @objc public var backgroundCardScale: CGFloat {
+        get { configuration.backgroundCardScale }
+        set { configuration.backgroundCardScale = newValue }
+    }
+    @objc public var backgroundCardVerticalOffset: CGFloat {
+        get { configuration.backgroundCardVerticalOffset }
+        set { configuration.backgroundCardVerticalOffset = newValue }
+    }
+    @objc public var backgroundCardCornerRadius: CGFloat {
+        get { configuration.backgroundCardCornerRadius }
+        set { configuration.backgroundCardCornerRadius = newValue }
+    }
+    @objc public var backgroundCardBackdropColor: UIColor {
+        get { configuration.backgroundCardBackdropColor }
+        set { configuration.backgroundCardBackdropColor = newValue }
+    }
+    @objc public var backgroundCardContentMode: DKPullUpBackgroundCardContentMode {
+        get { configuration.backgroundCardContentMode }
+        set { configuration.backgroundCardContentMode = newValue }
+    }
     @objc public var pullUpDefaultDragHandleColor: UIColor {
         get { configuration.defaultDragHandleColor }
         set { configuration.defaultDragHandleColor = newValue }
@@ -226,6 +250,17 @@ open class DKPullUpController: UIViewController {
     var host: SheetHostView?
     var sheetPan: UIPanGestureRecognizer?
     var panDelegate: SheetPanDelegate?
+    var backgroundCardSnapshotView: UIView?
+    var backgroundCardBackdropView: UIView?
+    weak var backgroundCardTransformedView: UIView?
+    var backgroundCardOriginalTransform: CGAffineTransform?
+    var backgroundCardOriginalHostTransform: CGAffineTransform?
+    var backgroundCardInteractionScale: CGFloat = 1
+    var backgroundCardOriginalCornerRadius: CGFloat?
+    var backgroundCardOriginalCornerCurve: CALayerCornerCurve?
+    var backgroundCardOriginalMasksToBounds: Bool?
+    var backgroundCardOriginalClipsToBounds: Bool?
+    var activeBackgroundCardContentMode: DKPullUpBackgroundCardContentMode?
     private let defaultDragHandle = UIView()
     private let backgroundBlurView = UIVisualEffectView()
     private var defaultDragHandleWidth: NSLayoutConstraint?
@@ -446,6 +481,17 @@ open class DKPullUpController: UIViewController {
             completion?(false)
             return
         }
+        let backgroundCardSnapshot: UIView?
+        if configuration.isBackgroundCardEffectEnabled,
+           configuration.backgroundCardContentMode == .snapshot {
+            guard let snapshot = parent.view.snapshotView(afterScreenUpdates: true) else {
+                completion?(false)
+                return
+            }
+            backgroundCardSnapshot = snapshot
+        } else {
+            backgroundCardSnapshot = nil
+        }
         initialHeight = initialVisibleHeight
         parent.loadViewIfNeeded()
         parent.addChild(self)
@@ -453,18 +499,30 @@ open class DKPullUpController: UIViewController {
         let container = SheetHostView(frame: parent.view.bounds)
         container.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         container.onResize = { [weak self] in self?.refreshLayout() }
+        container.onWindowChange = { [weak self] in
+            self?.updateBackgroundCardEffect()
+            self?.refreshLayout()
+        }
         host = container
         parent.view.addSubview(container)
         container.addSubview(view)
+        updateBackgroundCardEffect(snapshot: backgroundCardSnapshot)
         visibleHeight = physics.clamp(initialVisibleHeight)
         lastLayoutWasSide = usesSideLayout
         let destination = sheetFrame(in: container.bounds)
-        view.frame = animated ? CGRect(x: destination.minX, y: container.bounds.maxY,
-                                       width: destination.width, height: destination.height) : destination
+        updateBackgroundCardProgress(to: 0)
+        setSheetFrame(
+            animated ? CGRect(x: destination.minX, y: container.bounds.maxY,
+                              width: destination.width, height: destination.height) : destination,
+            in: container
+        )
         didMove(toParent: parent)
         updatePanAvailability()
         animatePullUp(action: .add, duration: animated ? validDuration(configuration.presentationDuration) : 0,
-                      animations: { [weak self] in self?.view.frame = destination }, completion: completion)
+                      animations: { [weak self] in
+                          self?.updateBackgroundCardProgress(to: self?.visibleHeight ?? 0)
+                          self?.setSheetFrame(destination, in: container)
+                      }, completion: completion)
     }
 
     /// Removes the sheet and restores the attached scroll view's bounce setting.
@@ -482,16 +540,20 @@ open class DKPullUpController: UIViewController {
         willMove(toParent: nil)
         restoreScrollBounce()
         scrollMovedSheet = false
-        var destination = view.frame
+        var destination = sheetFrame(in: host.bounds)
         destination.origin.y = host.bounds.maxY
         let duration = animated ? validDuration(configuration.dismissalDuration) : 0
         animatePullUp(action: .remove, duration: duration, animations: { [weak self] in
-            self?.view.frame = destination
+            self?.updateBackgroundCardProgress(to: 0)
+            self?.setSheetFrame(destination, in: host)
         }, completion: { [weak self] finished in
             guard let self else {
                 completion?(false)
                 return
             }
+            self.resetBackgroundCardEffect()
+            self.host?.onResize = nil
+            self.host?.onWindowChange = nil
             self.view.removeFromSuperview()
             self.host?.removeFromSuperview()
             self.host = nil

@@ -120,6 +120,18 @@ sheet.configuration.backgroundBlurStyle = .systemThinMaterial
 
 The blur is off by default. A custom `pullUpContentView` drawn over it should have a transparent background where the blur should show through.
 
+An optional background-card effect scales the parent screen as the sheet rises. It is off by default:
+
+```swift
+sheet.configuration.isBackgroundCardEffectEnabled = true
+sheet.configuration.backgroundCardScale = 0.9
+sheet.configuration.backgroundCardVerticalOffset = 24
+sheet.configuration.backgroundCardCornerRadius = 24
+sheet.configuration.backgroundCardContentMode = .live
+```
+
+In `.live` mode, the parent view itself scales, so its controls remain interactive at their visible positions while the sheet stays fixed. `.snapshot` scales a captured image instead and blocks touches outside the sheet until it is removed.
+
 ## Objective-C
 
 Import the package module and provide the sheet's content view and sizing in Objective-C:
@@ -137,6 +149,11 @@ sheet.layoutMode = DKPullUpLayoutModeBottom;
 sheet.pullUpDefaultDragHandleColor = UIColor.systemTealColor;
 sheet.isBackgroundBlurEnabled = YES;
 sheet.backgroundBlurStyle = DKPullUpBackgroundBlurStyleSystemThinMaterial;
+sheet.isBackgroundCardEffectEnabled = YES;
+sheet.backgroundCardScale = 0.9;
+sheet.backgroundCardVerticalOffset = 24;
+sheet.backgroundCardCornerRadius = 24;
+sheet.backgroundCardContentMode = DKPullUpBackgroundCardContentModeLive;
 [sheet addToParent:self initialVisibleHeight:140 animated:YES completion:nil];
 ```
 
@@ -162,6 +179,12 @@ configuration.maximumNumberOfTouches = 1
 configuration.showsDefaultDragHandle = true
 configuration.isBackgroundBlurEnabled = true
 configuration.backgroundBlurStyle = .systemThinMaterial
+configuration.isBackgroundCardEffectEnabled = true
+configuration.backgroundCardScale = 0.9
+configuration.backgroundCardVerticalOffset = 24
+configuration.backgroundCardCornerRadius = 24
+configuration.backgroundCardBackdropColor = .systemBackground
+configuration.backgroundCardContentMode = .live
 configuration.defaultDragHandleColor = .systemTeal
 configuration.defaultDragHandleWidth = 48
 configuration.defaultDragHandleHeight = 6
@@ -194,6 +217,12 @@ sheet.configuration = configuration
 | `showsDefaultDragHandle` | `true` | Shows the built-in handle when a custom handle has not been selected. |
 | `isBackgroundBlurEnabled` | `false` | Enables the built-in blur behind the sheet content. A custom content view must be transparent where the blur should show through. |
 | `backgroundBlurStyle` | `.systemMaterial` | Blur material: `.systemUltraThinMaterial`, `.systemThinMaterial`, `.systemMaterial`, `.systemThickMaterial`, `.systemChromeMaterial`, `.light`, or `.dark`. Used when background blur is enabled. |
+| `isBackgroundCardEffectEnabled` | `false` | Scales and rounds the parent screen as the sheet rises. |
+| `backgroundCardScale` | `0.9` | Scale of the background card at the sheet's maximum height. Values outside `(0, 1]` use `1`. |
+| `backgroundCardVerticalOffset` | `24` | Vertical translation in points at the sheet's maximum height; positive values move down. |
+| `backgroundCardCornerRadius` | `24` | Corner radius, in points, at the sheet's maximum height. Negative and non-finite values become zero. |
+| `backgroundCardBackdropColor` | `.systemBackground` | Color visible around the scaled background card. |
+| `backgroundCardContentMode` | `.live` | `.live` transforms the actual parent view to keep its controls interactive and aligned; `.snapshot` scales a captured image and blocks touches outside the sheet. |
 | `defaultDragHandleColor` | `.tertiaryLabel` | Built-in handle color. |
 | `defaultDragHandleWidth` | `40` | Built-in handle width in points. Negative and non-finite values become zero. |
 | `defaultDragHandleHeight` | `5` | Built-in handle height in points. Negative and non-finite values become zero. |
@@ -222,6 +251,12 @@ sheet.maximumNumberOfTouches = 1;
 sheet.showsDefaultDragHandle = YES;
 sheet.isBackgroundBlurEnabled = YES;
 sheet.backgroundBlurStyle = DKPullUpBackgroundBlurStyleSystemThinMaterial;
+sheet.isBackgroundCardEffectEnabled = YES;
+sheet.backgroundCardScale = 0.9;
+sheet.backgroundCardVerticalOffset = 24;
+sheet.backgroundCardCornerRadius = 24;
+sheet.backgroundCardBackdropColor = UIColor.systemBackgroundColor;
+sheet.backgroundCardContentMode = DKPullUpBackgroundCardContentModeLive;
 sheet.pullUpDefaultDragHandleColor = UIColor.systemTealColor;
 sheet.pullUpDefaultDragHandleWidth = 48;
 sheet.pullUpDefaultDragHandleHeight = 6;

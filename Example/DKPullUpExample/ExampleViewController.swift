@@ -51,6 +51,11 @@ final class ExampleViewController: UIViewController {
         sheet.configuration.defaultDragHandleHeight = 6
         sheet.configuration.defaultDragHandleCornerRadius = 3
         sheet.configuration.defaultDragHandleTopInset = 10
+        sheet.configuration.isBackgroundCardEffectEnabled = true
+        sheet.configuration.backgroundCardScale = 0.5
+        sheet.configuration.backgroundCardVerticalOffset = 5
+        sheet.configuration.backgroundCardCornerRadius = 16
+        sheet.configuration.backgroundCardContentMode = .live
     }
 
     override func viewDidAppear(_ animated: Bool) {

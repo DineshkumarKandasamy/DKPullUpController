@@ -51,6 +51,11 @@
     ]];
 
     self.sheetController = [[ExampleSheetViewController alloc] initWithWidth:self.view.bounds.size.width];
+    self.sheetController.sheet.isBackgroundCardEffectEnabled = YES;
+    self.sheetController.sheet.backgroundCardScale = 0.9;
+    self.sheetController.sheet.backgroundCardVerticalOffset = 24;
+    self.sheetController.sheet.backgroundCardCornerRadius = 24;
+    self.sheetController.sheet.backgroundCardContentMode = DKPullUpBackgroundCardContentModeLive;
 }
 
 - (void)viewDidAppear:(BOOL)animated {
