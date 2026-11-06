@@ -10,13 +10,24 @@ A UIKit child controller for a draggable sheet with configurable snap positions 
 
 ## Installation
 
-In Xcode, choose **File > Add Package Dependencies** and enter:
+### Add the package in Xcode
+
+These steps apply to both Swift and Objective-C app targets:
+
+1. In Xcode, choose **File > Add Package Dependencies**.
+2. Enter the repository URL:
 
 ```text
 https://github.com/DineshkumarKandasamy/DKPullUpController
 ```
 
-For a Swift package, add the dependency to `Package.swift`:
+3. Select the version or branch you want to use.
+4. Add the `DKPullUpController` product to your app target. For Objective-C, select the Objective-C app target as well.
+5. Wait for Xcode to resolve and link the package.
+
+### Swift Package Manager manifest
+
+For a project managed with a `Package.swift` manifest, add the package to `dependencies` and the product to your app target's dependencies:
 
 ```swift
 dependencies: [
@@ -30,7 +41,36 @@ targets: [
 ]
 ```
 
-The version requirement needs a matching release tag in the repository.
+The version requirement needs a matching release tag in the repository. Then:
+
+1. Import the package in a Swift source file:
+
+   ```swift
+   import DKPullUpController
+   ```
+2. Subclass `DKPullUpController` or instantiate it and configure its content.
+
+### Objective-C target
+
+The package implementation is written in Swift, with an Objective-C-compatible controller API. After adding and linking the package product to your Objective-C app target:
+
+1. Ensure **Build Settings > Enable Modules (CLANG_ENABLE_MODULES)** is `Yes`.
+2. Import the module in each Objective-C file that uses the controller:
+
+   ```objc
+   @import DKPullUpController;
+   ```
+3. Instantiate `DKPullUpController`, configure its content and sizing, and add it to a parent controller:
+
+   ```objc
+   DKPullUpController *sheet = [DKPullUpController new];
+   sheet.pullUpContentView = contentView;
+   sheet.pullUpPreferredSize = CGSizeMake(360, 600);
+   sheet.pullUpIntermediateSnapPoints = @[@300];
+   [sheet addToParent:self initialVisibleHeight:140 animated:YES completion:nil];
+   ```
+
+Objective-C clients configure the sheet through its exposed properties and methods; the Swift `configuration` struct is not directly available in Objective-C. See [Objective-C usage](#objective-c) for a complete example.
 
 ## Usage
 
