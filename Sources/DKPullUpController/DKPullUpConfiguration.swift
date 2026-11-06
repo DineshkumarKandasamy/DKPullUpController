@@ -7,30 +7,33 @@
 
 import UIKit
 
+@objc(DKPullUpLayoutMode)
+public enum DKPullUpLayoutMode: Int {
+    /// Selects side layout for wider-than-tall parents; otherwise uses bottom layout.
+    case automatic
+    /// Uses bottom layout regardless of the parent size.
+    case bottom
+    /// Uses the preferred side frame and disables sheet dragging.
+    case side
+}
+
+@objc(DKPullUpHorizontalAlignment)
+public enum DKPullUpHorizontalAlignment: Int {
+    /// Aligns the sheet with the parent's leading edge.
+    case leading
+    /// Centers the sheet within the parent.
+    case center
+    /// Aligns the sheet with the parent's trailing edge.
+    case trailing
+}
+
 /// Settings for positioning, dragging, and animating a pull-up sheet.
 ///
 /// Assign a configuration to ``DKPullUpController/configuration`` before or
 /// after presentation. Changes update the sheet's layout and gestures.
 public struct DKPullUpConfiguration {
-    /// Determines whether the sheet uses a draggable bottom layout or a fixed side layout.
-    public enum LayoutMode {
-        /// Selects side layout when the parent is wider than it is tall; otherwise uses bottom layout.
-        case automatic
-        /// Uses bottom layout regardless of the parent size.
-        case bottom
-        /// Uses the preferred side frame and disables sheet dragging.
-        case side
-    }
-
-    /// Determines the horizontal position of a bottom-layout sheet.
-    public enum HorizontalAlignment {
-        /// Aligns the sheet with the parent's leading edge.
-        case leading
-        /// Centers the sheet within the parent.
-        case center
-        /// Aligns the sheet with the parent's trailing edge.
-        case trailing
-    }
+    public typealias LayoutMode = DKPullUpLayoutMode
+    public typealias HorizontalAlignment = DKPullUpHorizontalAlignment
 
     /// The layout mode. Defaults to ``LayoutMode/automatic``.
     public var layoutMode: LayoutMode = .automatic

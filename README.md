@@ -71,6 +71,28 @@ sheet.configuration.defaultDragHandleTopInset = 10
 
 Set `showsDefaultDragHandle` to `false` to hide it. The sheet's own pan gesture starts on its root view. Use `setDragHandleView(_:)` to hide the default handle and restrict the gesture to a custom descendant, or pass `nil` to return to the configured default handle and the root-view gesture. The gesture is available as `pullUpPanGestureRecognizer` after the view loads; keep its delegate and target intact.
 
+## Objective-C
+
+Import the package module and provide the sheet's content view and sizing in Objective-C:
+
+```objc
+@import DKPullUpController;
+
+DKPullUpController *sheet = [DKPullUpController new];
+UIView *contentView = [[UIView alloc] init];
+contentView.backgroundColor = UIColor.secondarySystemBackgroundColor;
+sheet.pullUpContentView = contentView;
+sheet.pullUpPreferredSize = CGSizeMake(360, 600);
+sheet.pullUpIntermediateSnapPoints = @[@300];
+sheet.layoutMode = DKPullUpLayoutModeBottom;
+sheet.pullUpDefaultDragHandleColor = UIColor.systemTealColor;
+[sheet addToParent:self initialVisibleHeight:140 animated:YES completion:nil];
+```
+
+`configuration` remains the Swift configuration value. Objective-C code can configure its settings through the controller's matching properties, including `layoutMode`, `horizontalAlignment`, `horizontalOffset`, `bottomInset`, the drag and snapping options, and animation durations. Drag-handle settings use the `pullUpDefaultDragHandle...` property prefix. The preferred side frame is set with `pullUpPreferredLandscapeFrame`; current snap positions are available through `pullUpSnapPoints`.
+
+The controller's `moveToVisibleHeight:animated:completion:`, `removeAnimated:completion:`, `attachScrollView:`, and `detachScrollView` methods are also available. Objective-C clients configure the controller by composition; customize override hooks in a Swift subclass when behavior beyond the exposed settings is needed.
+
 ## Configuration
 
 Set `configuration` before or after adding the sheet. Changes update its layout and interaction settings.
@@ -103,7 +125,7 @@ All controller operations must run on the main actor.
 
 ## Example
 
-Open [DKPullUpExample.xcodeproj](Example/DKPullUpExample.xcodeproj) and run the `DKPullUpExample` scheme. The project references this package locally. A physical device requires a signing team configured in Xcode.
+Open [DKPullUpExample.xcodeproj](Example/DKPullUpExample.xcodeproj) and choose either the `DKPullUpExample` (Swift) or `DKPullUpObjCExample` (Objective-C) scheme. Both targets reference this package locally. A physical device requires a signing team configured in Xcode.
 
 ## License
 

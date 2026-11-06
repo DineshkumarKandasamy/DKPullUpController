@@ -14,9 +14,11 @@ import UIKit
 /// Heights are measured above the configured bottom inset. All operations run
 /// on the main actor.
 @MainActor
+@objc(DKPullUpController)
 open class DKPullUpController: UIViewController {
     /// The operation being passed to the animation hook.
-    public enum Action {
+    @objc(DKPullUpAction)
+    public enum Action: Int {
         /// The sheet is being presented.
         case add
         /// The sheet is being removed.
@@ -29,43 +31,188 @@ open class DKPullUpController: UIViewController {
     /// width, and the height sets the maximum snap position. The default width
     /// is the parent width or `320` before attachment; the default height is `400`.
     /// Call ``updatePreferredFrame(animated:)`` after changing the returned size.
-    open var preferredPullUpSize: CGSize {
-        CGSize(width: parent?.view.bounds.width ?? 320, height: 400)
+    @objc open var preferredPullUpSize: CGSize {
+        objectiveCPreferredSize ?? CGSize(width: parent?.view.bounds.width ?? 320, height: 400)
+    }
+
+    private var objectiveCPreferredSize: CGSize?
+
+    /// Preferred bottom-layout size for Objective-C clients that configure the
+    /// controller without subclassing it.
+    @objc public var pullUpPreferredSize: CGSize {
+        get { preferredPullUpSize }
+        set {
+            objectiveCPreferredSize = newValue
+            updatePreferredFrame(animated: false)
+        }
     }
 
     /// Preferred frame in the parent's coordinate space for side layout.
     /// The default uses a 16-point inset and a width of at most 360 points.
     /// Call ``updatePreferredFrame(animated:)`` after changing the returned frame.
-    open var preferredLandscapeFrame: CGRect {
+    @objc open var preferredLandscapeFrame: CGRect {
+        if let objectiveCPreferredLandscapeFrame { return objectiveCPreferredLandscapeFrame }
         let bounds = parent?.view.bounds ?? .zero
         return CGRect(x: 16, y: 16, width: min(360, max(0, bounds.width - 32)), height: max(0, bounds.height - 32))
+    }
+
+    private var objectiveCPreferredLandscapeFrame: CGRect?
+
+    /// Preferred side-layout frame for Objective-C clients that configure the
+    /// controller without subclassing it.
+    @objc public var pullUpPreferredLandscapeFrame: CGRect {
+        get { preferredLandscapeFrame }
+        set {
+            objectiveCPreferredLandscapeFrame = newValue
+            updatePreferredFrame(animated: false)
+        }
     }
 
     /// Additional visible heights in points, excluding the initial and maximum
     /// heights. Values are bounded, sorted, and deduplicated. Defaults to empty.
     /// Call ``updatePreferredFrame(animated:)`` after changing the returned points.
-    open var middleSnapPoints: [CGFloat] { [] }
+    open var middleSnapPoints: [CGFloat] {
+        objectiveCIntermediateSnapPoints ?? pullUpMiddleSnapPoints().map { CGFloat(truncating: $0) }
+    }
+
+    private var objectiveCIntermediateSnapPoints: [CGFloat]?
+
+    /// Intermediate snap positions for Objective-C clients that configure the
+    /// controller without subclassing it.
+    @objc public var pullUpIntermediateSnapPoints: [NSNumber] {
+        get { middleSnapPoints.map { NSNumber(value: Double($0)) } }
+        set {
+            objectiveCIntermediateSnapPoints = newValue.map { CGFloat(truncating: $0) }
+            updatePreferredFrame(animated: false)
+        }
+    }
+
+    /// Objective-C override point for additional visible heights.
+    @objc open func pullUpMiddleSnapPoints() -> [NSNumber] { [] }
+
     /// Extra distance in points that a drag may extend beyond the snap range.
     /// Scroll-driven drags use it only when scroll drag bounce is enabled. Defaults to `0`.
-    open var bounceOffset: CGFloat { 0 }
+    @objc open var bounceOffset: CGFloat { 0 }
     /// Absolute release velocity in points per second above which the default
     /// snap target uses a projected position. Defaults to `700`.
-    open var skipPointVelocity: CGFloat { 700 }
+    @objc open var skipPointVelocity: CGFloat { 700 }
 
     /// Layout, gesture, and animation settings. Changes update the loaded sheet.
     public var configuration = DKPullUpConfiguration() {
         didSet { configurationDidChange() }
     }
 
+    @objc public var layoutMode: DKPullUpLayoutMode {
+        get { configuration.layoutMode }
+        set { configuration.layoutMode = newValue }
+    }
+    @objc public var horizontalAlignment: DKPullUpHorizontalAlignment {
+        get { configuration.horizontalAlignment }
+        set { configuration.horizontalAlignment = newValue }
+    }
+    @objc public var horizontalOffset: CGFloat {
+        get { configuration.horizontalOffset }
+        set { configuration.horizontalOffset = newValue }
+    }
+    @objc public var bottomInset: CGFloat {
+        get { configuration.bottomInset }
+        set { configuration.bottomInset = newValue }
+    }
+    @objc public var isDraggingEnabled: Bool {
+        get { configuration.isDraggingEnabled }
+        set { configuration.isDraggingEnabled = newValue }
+    }
+    @objc public var isScrollDraggingEnabled: Bool {
+        get { configuration.isScrollDraggingEnabled }
+        set { configuration.isScrollDraggingEnabled = newValue }
+    }
+    @objc public var isSnappingEnabled: Bool {
+        get { configuration.isSnappingEnabled }
+        set { configuration.isSnappingEnabled = newValue }
+    }
+    @objc public var allowsScrollDragBounce: Bool {
+        get { configuration.allowsScrollDragBounce }
+        set { configuration.allowsScrollDragBounce = newValue }
+    }
+    @objc public var maximumNumberOfTouches: Int {
+        get { configuration.maximumNumberOfTouches }
+        set { configuration.maximumNumberOfTouches = newValue }
+    }
+    @objc public var showsDefaultDragHandle: Bool {
+        get { configuration.showsDefaultDragHandle }
+        set { configuration.showsDefaultDragHandle = newValue }
+    }
+    @objc public var pullUpDefaultDragHandleColor: UIColor {
+        get { configuration.defaultDragHandleColor }
+        set { configuration.defaultDragHandleColor = newValue }
+    }
+    @objc public var pullUpDefaultDragHandleWidth: CGFloat {
+        get { configuration.defaultDragHandleWidth }
+        set { configuration.defaultDragHandleWidth = newValue }
+    }
+    @objc public var pullUpDefaultDragHandleHeight: CGFloat {
+        get { configuration.defaultDragHandleHeight }
+        set { configuration.defaultDragHandleHeight = newValue }
+    }
+    @objc public var pullUpDefaultDragHandleCornerRadius: CGFloat {
+        get { configuration.defaultDragHandleCornerRadius }
+        set { configuration.defaultDragHandleCornerRadius = newValue }
+    }
+    @objc public var pullUpDefaultDragHandleTopInset: CGFloat {
+        get { configuration.defaultDragHandleTopInset }
+        set { configuration.defaultDragHandleTopInset = newValue }
+    }
+    @objc public var presentationDuration: TimeInterval {
+        get { configuration.presentationDuration }
+        set { configuration.presentationDuration = newValue }
+    }
+    @objc public var dismissalDuration: TimeInterval {
+        get { configuration.dismissalDuration }
+        set { configuration.dismissalDuration = newValue }
+    }
+    @objc public var movementDuration: TimeInterval {
+        get { configuration.movementDuration }
+        set { configuration.movementDuration = newValue }
+    }
+    @objc public var minimumSnapDuration: TimeInterval {
+        get { configuration.minimumSnapDuration }
+        set { configuration.minimumSnapDuration = newValue }
+    }
+    @objc public var maximumSnapDuration: TimeInterval {
+        get { configuration.maximumSnapDuration }
+        set { configuration.maximumSnapDuration = newValue }
+    }
+    @objc public var usesVelocityForSnapDuration: Bool {
+        get { configuration.usesVelocityForSnapDuration }
+        set { configuration.usesVelocityForSnapDuration = newValue }
+    }
+    @objc public var scrollTopTolerance: CGFloat {
+        get { configuration.scrollTopTolerance }
+        set { configuration.scrollTopTolerance = newValue }
+    }
+
     /// Current bottom-layout height in points above the bottom inset. In side
     /// layout, this retains the bottom-layout height rather than the side height.
-    public internal(set) var visibleHeight: CGFloat = 0
+    @objc public internal(set) var visibleHeight: CGFloat = 0
     /// The sheet's pan gesture after its view loads, or `nil` before then.
     /// Keep its target and delegate intact so sheet dragging continues to work.
-    public var pullUpPanGestureRecognizer: UIPanGestureRecognizer? { sheetPan }
+    @objc public var pullUpPanGestureRecognizer: UIPanGestureRecognizer? { sheetPan }
     /// Sorted, unique snap positions, including the initial and preferred heights.
     /// Non-finite values are excluded and positions are limited to the preferred height.
     public var snapPoints: [CGFloat] { physics.positions }
+
+    /// Objective-C representation of the current snap positions.
+    @objc public var pullUpSnapPoints: [NSNumber] {
+        physics.positions.map { NSNumber(value: Double($0)) }
+    }
+
+    /// Optional content view hosted inside the sheet.
+    @objc public var pullUpContentView: UIView? {
+        didSet { updatePullUpContentView() }
+    }
+
+    private var installedContentView: UIView?
+    private var contentViewConstraints: [NSLayoutConstraint] = []
 
     var initialHeight: CGFloat = 0
     var host: SheetHostView?
@@ -90,6 +237,7 @@ open class DKPullUpController: UIViewController {
     /// must call `super.viewDidLoad()`.
     open override func viewDidLoad() {
         super.viewDidLoad()
+        updatePullUpContentView()
         defaultDragHandle.isUserInteractionEnabled = false
         defaultDragHandle.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(defaultDragHandle)
@@ -107,6 +255,24 @@ open class DKPullUpController: UIViewController {
         sheetPan = recognizer
         view.addGestureRecognizer(recognizer)
         configurationDidChange()
+    }
+
+    private func updatePullUpContentView() {
+        guard isViewLoaded else { return }
+        NSLayoutConstraint.deactivate(contentViewConstraints)
+        installedContentView?.removeFromSuperview()
+        installedContentView = pullUpContentView
+        contentViewConstraints = []
+        guard let contentView = installedContentView else { return }
+        contentView.translatesAutoresizingMaskIntoConstraints = false
+        view.insertSubview(contentView, at: 0)
+        contentViewConstraints = [
+            contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            contentView.topAnchor.constraint(equalTo: view.topAnchor),
+            contentView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ]
+        NSLayoutConstraint.activate(contentViewConstraints)
     }
 
     open override func viewDidLayoutSubviews() {
@@ -130,13 +296,13 @@ open class DKPullUpController: UIViewController {
 
     /// Called before a programmatic or release movement begins.
     /// - Parameter visibleHeight: The destination in points above the bottom inset.
-    open func pullUpWillMove(to visibleHeight: CGFloat) { }
+    @objc open func pullUpWillMove(to visibleHeight: CGFloat) { }
     /// Called after a programmatic or release movement finishes successfully.
     /// - Parameter visibleHeight: The destination in points above the bottom inset.
-    open func pullUpDidMove(to visibleHeight: CGFloat) { }
+    @objc open func pullUpDidMove(to visibleHeight: CGFloat) { }
     /// Called as a gesture changes the sheet's visible height.
     /// - Parameter visibleHeight: The current height in points above the bottom inset.
-    open func pullUpDidDrag(to visibleHeight: CGFloat) { }
+    @objc open func pullUpDidDrag(to visibleHeight: CGFloat) { }
 
     /// Selects the destination when a drag ends with snapping enabled.
     ///
@@ -149,7 +315,19 @@ open class DKPullUpController: UIViewController {
     ///   - points: The sorted snap points available to the controller.
     /// - Returns: The requested destination in points above the bottom inset.
     open func targetSnapPoint(for visibleHeight: CGFloat, velocity: CGFloat, points: [CGFloat]) -> CGFloat {
-        let available = SheetPhysics(initial: points.first ?? 0, maximum: points.last ?? 0, intermediate: points)
+        pullUpTargetSnapPoint(
+            forVisibleHeight: visibleHeight,
+            velocity: velocity,
+            points: points.map { NSNumber(value: Double($0)) }
+        )
+    }
+
+    /// Objective-C override point for selecting a destination snap position.
+    @objc open func pullUpTargetSnapPoint(
+        forVisibleHeight visibleHeight: CGFloat, velocity: CGFloat, points: [NSNumber]
+    ) -> CGFloat {
+        let positions = points.map { CGFloat(truncating: $0) }
+        let available = SheetPhysics(initial: positions.first ?? 0, maximum: positions.last ?? 0, intermediate: positions)
         return available.destination(from: visibleHeight, velocity: velocity, threshold: skipPointVelocity)
     }
 
@@ -162,7 +340,7 @@ open class DKPullUpController: UIViewController {
     ///   - target: The bounded destination height, in points.
     ///   - velocity: Vertical release velocity in points per second.
     /// - Returns: The requested animation duration in seconds.
-    open func snapAnimationDuration(
+    @objc open func snapAnimationDuration(
         from visibleHeight: CGFloat, to target: CGFloat, velocity: CGFloat
     ) -> TimeInterval {
         SheetPhysics.duration(
@@ -179,7 +357,7 @@ open class DKPullUpController: UIViewController {
     /// sheet gesture is on the root view.
     /// - Parameter touch: The touch being evaluated.
     /// - Returns: `true` when the sheet gesture should receive the touch.
-    open func shouldReceivePullUpTouch(_ touch: UITouch) -> Bool {
+    @objc open func shouldReceivePullUpTouch(_ touch: UITouch) -> Bool {
         guard sheetPan?.view === view, let scrollView, let touchedView = touch.view else { return true }
         return touchedView !== scrollView && !touchedView.isDescendant(of: scrollView)
     }
@@ -192,7 +370,7 @@ open class DKPullUpController: UIViewController {
     ///   - scrollView: The attached scroll view.
     ///   - translation: Vertical pan translation in points; positive is downward.
     /// - Returns: `true` when the pan should move the sheet.
-    open func shouldDragPullUp(from scrollView: UIScrollView, translation: CGFloat) -> Bool {
+    @objc open func shouldDragPullUp(from scrollView: UIScrollView, translation: CGFloat) -> Bool {
         let top = -scrollView.adjustedContentInset.top
         let tolerance = configuration.scrollTopTolerance.isFinite ? max(0, configuration.scrollTopTolerance) : 0
         let allowance = configuration.allowsScrollDragBounce ? bounceOffset : 0
@@ -210,7 +388,7 @@ open class DKPullUpController: UIViewController {
     ///   - duration: Requested duration in seconds.
     ///   - animations: Changes to perform during the animation.
     ///   - completion: Receives whether the animation finished.
-    open func animatePullUp(
+    @objc open func animatePullUp(
         action: Action, duration: TimeInterval, animations: @escaping () -> Void, completion: ((Bool) -> Void)?
     ) {
         guard duration > 0 else {
@@ -230,6 +408,7 @@ open class DKPullUpController: UIViewController {
     ///   - animated: Whether to animate presentation.
     ///   - completion: Receives the animation result, or `false` when the sheet
     ///     is already attached, being removed, or the initial height is invalid.
+    @objc(addToParent:initialVisibleHeight:animated:completion:)
     public func add(
         to parent: UIViewController, initialVisibleHeight: CGFloat, animated: Bool = true,
         completion: ((Bool) -> Void)? = nil
@@ -264,6 +443,7 @@ open class DKPullUpController: UIViewController {
     ///   - animated: Whether to animate removal.
     ///   - completion: Receives the animation result, or `false` when the sheet
     ///     is not attached or a removal is already in progress.
+    @objc(removeAnimated:completion:)
     public func remove(animated: Bool = true, completion: ((Bool) -> Void)? = nil) {
         guard parent != nil, let host, !isRemoving else {
             completion?(false)
@@ -299,6 +479,7 @@ open class DKPullUpController: UIViewController {
     ///   - animated: Whether to animate the movement.
     ///   - completion: Receives the animation result, or `false` when the sheet
     ///     is detached, being removed, in side layout, or the height is invalid.
+    @objc(moveToVisibleHeight:animated:completion:)
     public func move(to visibleHeight: CGFloat, animated: Bool = true, completion: ((Bool) -> Void)? = nil) {
         guard host != nil, !isRemoving, !usesSideLayout, visibleHeight.isFinite else {
             completion?(false)
@@ -311,6 +492,7 @@ open class DKPullUpController: UIViewController {
     /// Updates the sheet after a preferred size, side frame, or snap point changes.
     /// Does nothing when the sheet is detached or being removed.
     /// - Parameter animated: Whether to animate the resulting layout change.
+    @objc(updatePreferredFrameAnimated:)
     public func updatePreferredFrame(animated: Bool = false) {
         guard host != nil, !isRemoving else { return }
         visibleHeight = physics.clamp(visibleHeight)
@@ -322,6 +504,7 @@ open class DKPullUpController: UIViewController {
     /// Coordinates an attached scroll view's pan gesture with the sheet. Attaching
     /// another scroll view first detaches the existing one.
     /// - Parameter scrollView: The scroll view whose pan may move the sheet.
+    @objc(attachScrollView:)
     public func attach(scrollView: UIScrollView) {
         guard self.scrollView !== scrollView else { return }
         detachScrollView()
@@ -331,6 +514,7 @@ open class DKPullUpController: UIViewController {
 
     /// Stops coordinating with the attached scroll view and restores its bounce
     /// setting. An in-progress sheet drag is settled when appropriate.
+    @objc
     public func detachScrollView() {
         restoreScrollBounce()
         scrollView?.panGestureRecognizer.removeTarget(self, action: #selector(handleScrollPan(_:)))
@@ -345,6 +529,7 @@ open class DKPullUpController: UIViewController {
     /// - Returns: `true` when the gesture is attached; otherwise `false` and the
     ///   existing attachment remains unchanged.
     @discardableResult
+    @objc(setDragHandleView:)
     public func setDragHandleView(_ handle: UIView?) -> Bool {
         loadViewIfNeeded()
         guard let recognizer = sheetPan, let root = view else { return false }
