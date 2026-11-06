@@ -27,6 +27,36 @@ public enum DKPullUpHorizontalAlignment: Int {
     case trailing
 }
 
+@objc(DKPullUpBackgroundBlurStyle)
+public enum DKPullUpBackgroundBlurStyle: Int {
+    /// Uses an ultra-thin system material.
+    case systemUltraThinMaterial
+    /// Uses a thin system material.
+    case systemThinMaterial
+    /// Uses the standard system material.
+    case systemMaterial
+    /// Uses a thick system material.
+    case systemThickMaterial
+    /// Uses the system chrome material.
+    case systemChromeMaterial
+    /// Uses a light blur.
+    case light
+    /// Uses a dark blur.
+    case dark
+
+    var uiBlurEffectStyle: UIBlurEffect.Style {
+        switch self {
+        case .systemUltraThinMaterial: .systemUltraThinMaterial
+        case .systemThinMaterial: .systemThinMaterial
+        case .systemMaterial: .systemMaterial
+        case .systemThickMaterial: .systemThickMaterial
+        case .systemChromeMaterial: .systemChromeMaterial
+        case .light: .light
+        case .dark: .dark
+        }
+    }
+}
+
 /// Settings for positioning, dragging, and animating a pull-up sheet.
 ///
 /// Assign a configuration to ``DKPullUpController/configuration`` before or
@@ -34,6 +64,7 @@ public enum DKPullUpHorizontalAlignment: Int {
 public struct DKPullUpConfiguration {
     public typealias LayoutMode = DKPullUpLayoutMode
     public typealias HorizontalAlignment = DKPullUpHorizontalAlignment
+    public typealias BackgroundBlurStyle = DKPullUpBackgroundBlurStyle
 
     /// The layout mode. Defaults to ``LayoutMode/automatic``.
     public var layoutMode: LayoutMode = .automatic
@@ -60,6 +91,10 @@ public struct DKPullUpConfiguration {
     public var maximumNumberOfTouches = 1
     /// Shows the built-in handle when no custom handle is selected. Defaults to `true`.
     public var showsDefaultDragHandle = true
+    /// Enables the built-in blur behind the sheet content. Defaults to `false`.
+    public var isBackgroundBlurEnabled = false
+    /// Style used by the built-in blur when enabled. Defaults to `.systemMaterial`.
+    public var backgroundBlurStyle: BackgroundBlurStyle = .systemMaterial
     /// Color of the built-in handle. Defaults to the dynamic tertiary label color.
     public var defaultDragHandleColor: UIColor = .tertiaryLabel
     /// Width of the built-in handle in points. Defaults to `40`.

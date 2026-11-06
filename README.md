@@ -111,6 +111,15 @@ sheet.configuration.defaultDragHandleTopInset = 10
 
 Set `showsDefaultDragHandle` to `false` to hide it. The sheet's own pan gesture starts on its root view. Use `setDragHandleView(_:)` to hide the default handle and restrict the gesture to a custom descendant, or pass `nil` to return to the configured default handle and the root-view gesture. The gesture is available as `pullUpPanGestureRecognizer` after the view loads; keep its delegate and target intact.
 
+An optional built-in blur can be enabled behind the sheet content:
+
+```swift
+sheet.configuration.isBackgroundBlurEnabled = true
+sheet.configuration.backgroundBlurStyle = .systemThinMaterial
+```
+
+The blur is off by default. A custom `pullUpContentView` drawn over it should have a transparent background where the blur should show through.
+
 ## Objective-C
 
 Import the package module and provide the sheet's content view and sizing in Objective-C:
@@ -126,6 +135,8 @@ sheet.pullUpPreferredSize = CGSizeMake(360, 600);
 sheet.pullUpIntermediateSnapPoints = @[@300];
 sheet.layoutMode = DKPullUpLayoutModeBottom;
 sheet.pullUpDefaultDragHandleColor = UIColor.systemTealColor;
+sheet.isBackgroundBlurEnabled = YES;
+sheet.backgroundBlurStyle = DKPullUpBackgroundBlurStyleSystemThinMaterial;
 [sheet addToParent:self initialVisibleHeight:140 animated:YES completion:nil];
 ```
 
@@ -149,6 +160,8 @@ configuration.isSnappingEnabled = true
 configuration.allowsScrollDragBounce = false
 configuration.maximumNumberOfTouches = 1
 configuration.showsDefaultDragHandle = true
+configuration.isBackgroundBlurEnabled = true
+configuration.backgroundBlurStyle = .systemThinMaterial
 configuration.defaultDragHandleColor = .systemTeal
 configuration.defaultDragHandleWidth = 48
 configuration.defaultDragHandleHeight = 6
@@ -179,6 +192,8 @@ sheet.configuration = configuration
 | `allowsScrollDragBounce` | `false` | Allows scroll-driven drags to extend beyond the snap range by `bounceOffset`. |
 | `maximumNumberOfTouches` | `1` | Maximum touches accepted by the sheet pan gesture. Values below one are treated as one. |
 | `showsDefaultDragHandle` | `true` | Shows the built-in handle when a custom handle has not been selected. |
+| `isBackgroundBlurEnabled` | `false` | Enables the built-in blur behind the sheet content. A custom content view must be transparent where the blur should show through. |
+| `backgroundBlurStyle` | `.systemMaterial` | Blur material: `.systemUltraThinMaterial`, `.systemThinMaterial`, `.systemMaterial`, `.systemThickMaterial`, `.systemChromeMaterial`, `.light`, or `.dark`. Used when background blur is enabled. |
 | `defaultDragHandleColor` | `.tertiaryLabel` | Built-in handle color. |
 | `defaultDragHandleWidth` | `40` | Built-in handle width in points. Negative and non-finite values become zero. |
 | `defaultDragHandleHeight` | `5` | Built-in handle height in points. Negative and non-finite values become zero. |
@@ -205,6 +220,8 @@ sheet.isSnappingEnabled = YES;
 sheet.allowsScrollDragBounce = NO;
 sheet.maximumNumberOfTouches = 1;
 sheet.showsDefaultDragHandle = YES;
+sheet.isBackgroundBlurEnabled = YES;
+sheet.backgroundBlurStyle = DKPullUpBackgroundBlurStyleSystemThinMaterial;
 sheet.pullUpDefaultDragHandleColor = UIColor.systemTealColor;
 sheet.pullUpDefaultDragHandleWidth = 48;
 sheet.pullUpDefaultDragHandleHeight = 6;

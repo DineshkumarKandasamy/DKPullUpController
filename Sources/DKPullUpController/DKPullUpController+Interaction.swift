@@ -31,6 +31,7 @@ extension DKPullUpController {
     /// Applies configuration changes to the drag handle, gestures, and sheet layout.
     func configurationDidChange() {
         updateDefaultDragHandle()
+        updateBackgroundBlur()
         sheetPan?.maximumNumberOfTouches = max(1, configuration.maximumNumberOfTouches)
         if !configuration.isScrollDraggingEnabled {
             restoreScrollBounce()

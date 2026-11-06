@@ -142,6 +142,14 @@ open class DKPullUpController: UIViewController {
         get { configuration.showsDefaultDragHandle }
         set { configuration.showsDefaultDragHandle = newValue }
     }
+    @objc public var isBackgroundBlurEnabled: Bool {
+        get { configuration.isBackgroundBlurEnabled }
+        set { configuration.isBackgroundBlurEnabled = newValue }
+    }
+    @objc public var backgroundBlurStyle: DKPullUpBackgroundBlurStyle {
+        get { configuration.backgroundBlurStyle }
+        set { configuration.backgroundBlurStyle = newValue }
+    }
     @objc public var pullUpDefaultDragHandleColor: UIColor {
         get { configuration.defaultDragHandleColor }
         set { configuration.defaultDragHandleColor = newValue }
@@ -219,6 +227,7 @@ open class DKPullUpController: UIViewController {
     var sheetPan: UIPanGestureRecognizer?
     var panDelegate: SheetPanDelegate?
     private let defaultDragHandle = UIView()
+    private let backgroundBlurView = UIVisualEffectView()
     private var defaultDragHandleWidth: NSLayoutConstraint?
     private var defaultDragHandleHeight: NSLayoutConstraint?
     private var defaultDragHandleTop: NSLayoutConstraint?
@@ -237,6 +246,14 @@ open class DKPullUpController: UIViewController {
     /// must call `super.viewDidLoad()`.
     open override func viewDidLoad() {
         super.viewDidLoad()
+        backgroundBlurView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(backgroundBlurView)
+        NSLayoutConstraint.activate([
+            backgroundBlurView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            backgroundBlurView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            backgroundBlurView.topAnchor.constraint(equalTo: view.topAnchor),
+            backgroundBlurView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
         updatePullUpContentView()
         defaultDragHandle.isUserInteractionEnabled = false
         defaultDragHandle.translatesAutoresizingMaskIntoConstraints = false
@@ -266,7 +283,7 @@ open class DKPullUpController: UIViewController {
         contentViewConstraints = []
         guard let contentView = installedContentView else { return }
         contentView.translatesAutoresizingMaskIntoConstraints = false
-        view.insertSubview(contentView, at: 0)
+        view.insertSubview(contentView, aboveSubview: backgroundBlurView)
         contentViewConstraints = [
             contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -291,6 +308,14 @@ open class DKPullUpController: UIViewController {
         defaultDragHandleHeight?.constant = validHandleDimension(configuration.defaultDragHandleHeight)
         defaultDragHandleTop?.constant = validHandleDimension(configuration.defaultDragHandleTopInset)
         defaultDragHandle.isHidden = usesCustomDragHandle || !configuration.showsDefaultDragHandle
+    }
+
+    /// Applies the configured blur style or removes the blur when disabled.
+    func updateBackgroundBlur() {
+        backgroundBlurView.effect = configuration.isBackgroundBlurEnabled
+            ? UIBlurEffect(style: configuration.backgroundBlurStyle.uiBlurEffectStyle)
+            : nil
+        backgroundBlurView.isHidden = !configuration.isBackgroundBlurEnabled
     }
 
     /// Clamps a handle dimension to a finite, nonnegative value.
