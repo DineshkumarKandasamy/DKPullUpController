@@ -71,31 +71,6 @@ extension DKPullUpController {
         return CGRect(x: horizontalPosition, y: bounds.maxY - inset - visibleHeight, width: width, height: height)
     }
 
-    /// Positions the sheet in untransformed parent coordinates while the host is scaled with the parent.
-    func setSheetFrame(_ frame: CGRect, in host: SheetHostView) {
-        guard configuration.isBackgroundCardEffectEnabled,
-              configuration.backgroundCardContentMode == .live,
-              let parentView = backgroundCardTransformedView,
-              let window = host.window else {
-            view.frame = frame
-            return
-        }
-
-        let transformedParent = parentView.transform
-        var frameInWindow = CGRect.zero
-        UIView.performWithoutAnimation {
-            parentView.transform = backgroundCardOriginalTransform ?? .identity
-            frameInWindow = host.convert(frame, to: window)
-            parentView.transform = transformedParent
-        }
-        view.frame = host.convert(frameInWindow, from: window)
-    }
-
-    /// Converts a pan value from transformed host coordinates to sheet points.
-    func sheetPointValue(fromHost value: CGFloat) -> CGFloat {
-        value * backgroundCardInteractionScale
-    }
-
     /// Reconciles the sheet's position and pan gesture with the current layout.
     func refreshLayout() {
         guard let host, !isRemoving else { return }
@@ -111,7 +86,7 @@ extension DKPullUpController {
         lastLayoutWasSide = isSide
         updatePanAvailability()
         updateBackgroundCardProgress(to: visibleHeight)
-        setSheetFrame(sheetFrame(in: host.bounds), in: host)
+        view.frame = sheetFrame(in: host.bounds)
     }
 
     /// Moves an attached sheet to a destination and reports animation completion.
@@ -124,8 +99,8 @@ extension DKPullUpController {
         pullUpWillMove(to: destination)
         let frame = sheetFrame(in: host.bounds)
         animatePullUp(action: .move, duration: validDuration(duration), animations: { [weak self] in
+            self?.view.frame = frame
             self?.updateBackgroundCardProgress(to: destination)
-            self?.setSheetFrame(frame, in: host)
         }, completion: { [weak self] finished in
             if finished { self?.pullUpDidMove(to: destination) }
             completion?(finished)
@@ -152,14 +127,14 @@ extension DKPullUpController {
         guard let host, !usesSideLayout, !isRemoving else { return }
         switch recognizer.state {
         case .changed:
-            let translation = sheetPointValue(fromHost: recognizer.translation(in: host).y)
+            let translation = recognizer.translation(in: host).y
             visibleHeight = physics.clamp(visibleHeight - translation, overshoot: bounceOffset)
+            view.frame = sheetFrame(in: host.bounds)
             updateBackgroundCardProgress(to: visibleHeight)
-            setSheetFrame(sheetFrame(in: host.bounds), in: host)
             recognizer.setTranslation(.zero, in: host)
             pullUpDidDrag(to: visibleHeight)
         case .ended:
-            settle(velocity: sheetPointValue(fromHost: recognizer.velocity(in: host).y))
+            settle(velocity: recognizer.velocity(in: host).y)
         case .cancelled, .failed:
             settle(velocity: 0)
         default: break
@@ -178,7 +153,7 @@ extension DKPullUpController {
             scrollMovedSheet = false
             recognizer.setTranslation(.zero, in: host)
         case .changed:
-            let translation = sheetPointValue(fromHost: recognizer.translation(in: host).y)
+            let translation = recognizer.translation(in: host).y
             if shouldDragPullUp(from: scrollView, translation: translation) {
                 if savedScrollBounce == nil { savedScrollBounce = scrollView.bounces }
                 scrollView.bounces = false
@@ -186,8 +161,8 @@ extension DKPullUpController {
                 scrollView.setContentOffset(CGPoint(x: scrollView.contentOffset.x, y: top), animated: false)
                 let allowance = configuration.allowsScrollDragBounce ? bounceOffset : 0
                 visibleHeight = physics.clamp(visibleHeight - translation, overshoot: allowance)
+                view.frame = sheetFrame(in: host.bounds)
                 updateBackgroundCardProgress(to: visibleHeight)
-                setSheetFrame(sheetFrame(in: host.bounds), in: host)
                 pullUpDidDrag(to: visibleHeight)
                 scrollMovedSheet = true
             }
@@ -198,8 +173,7 @@ extension DKPullUpController {
                 let top = -scrollView.adjustedContentInset.top
                 let tolerance = configuration.scrollTopTolerance.isFinite ? max(0, configuration.scrollTopTolerance) : 0
                 let shouldUseVelocity = recognizer.state == .ended && scrollView.contentOffset.y <= top + tolerance
-                settle(velocity: shouldUseVelocity
-                    ? sheetPointValue(fromHost: recognizer.velocity(in: host).y) : 0)
+                settle(velocity: shouldUseVelocity ? recognizer.velocity(in: host).y : 0)
             }
             scrollMovedSheet = false
         default: break

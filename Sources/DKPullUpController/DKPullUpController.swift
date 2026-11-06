@@ -251,11 +251,13 @@ open class DKPullUpController: UIViewController {
     var sheetPan: UIPanGestureRecognizer?
     var panDelegate: SheetPanDelegate?
     var backgroundCardSnapshotView: UIView?
-    var backgroundCardBackdropView: UIView?
-    weak var backgroundCardTransformedView: UIView?
+    weak var backgroundCardParentView: UIView?
+    var backgroundCardContentView: UIView?
+    var backgroundCardOriginalSubviews: [UIView]?
+    var backgroundCardOriginalConstraints: [NSLayoutConstraint]?
+    var backgroundCardContentConstraints: [NSLayoutConstraint]?
+    var backgroundCardOriginalParentBackgroundColor: UIColor?
     var backgroundCardOriginalTransform: CGAffineTransform?
-    var backgroundCardOriginalHostTransform: CGAffineTransform?
-    var backgroundCardInteractionScale: CGFloat = 1
     var backgroundCardOriginalCornerRadius: CGFloat?
     var backgroundCardOriginalCornerCurve: CALayerCornerCurve?
     var backgroundCardOriginalMasksToBounds: Bool?
@@ -511,17 +513,14 @@ open class DKPullUpController: UIViewController {
         lastLayoutWasSide = usesSideLayout
         let destination = sheetFrame(in: container.bounds)
         updateBackgroundCardProgress(to: 0)
-        setSheetFrame(
-            animated ? CGRect(x: destination.minX, y: container.bounds.maxY,
-                              width: destination.width, height: destination.height) : destination,
-            in: container
-        )
+        view.frame = animated ? CGRect(x: destination.minX, y: container.bounds.maxY,
+                                       width: destination.width, height: destination.height) : destination
         didMove(toParent: parent)
         updatePanAvailability()
         animatePullUp(action: .add, duration: animated ? validDuration(configuration.presentationDuration) : 0,
                       animations: { [weak self] in
+                          self?.view.frame = destination
                           self?.updateBackgroundCardProgress(to: self?.visibleHeight ?? 0)
-                          self?.setSheetFrame(destination, in: container)
                       }, completion: completion)
     }
 
@@ -540,12 +539,12 @@ open class DKPullUpController: UIViewController {
         willMove(toParent: nil)
         restoreScrollBounce()
         scrollMovedSheet = false
-        var destination = sheetFrame(in: host.bounds)
+        var destination = view.frame
         destination.origin.y = host.bounds.maxY
         let duration = animated ? validDuration(configuration.dismissalDuration) : 0
         animatePullUp(action: .remove, duration: duration, animations: { [weak self] in
+            self?.view.frame = destination
             self?.updateBackgroundCardProgress(to: 0)
-            self?.setSheetFrame(destination, in: host)
         }, completion: { [weak self] finished in
             guard let self else {
                 completion?(false)

@@ -22,7 +22,7 @@ extension DKPullUpController {
             backgroundCardSnapshotView?.removeFromSuperview()
             backgroundCardSnapshotView = nil
             installLiveBackgroundCard(parentView: parent.view, host: host)
-            backgroundCardBackdropView?.backgroundColor = configuration.backgroundCardBackdropColor
+            parent.view.backgroundColor = configuration.backgroundCardBackdropColor
             host.backgroundColor = .clear
             host.passesTouchesThrough = true
         case .snapshot:
@@ -62,20 +62,17 @@ extension DKPullUpController {
 
         switch configuration.backgroundCardContentMode {
         case .live:
-            guard let parentView = backgroundCardTransformedView, let host else { return }
-            backgroundCardInteractionScale = scale
+            guard let contentView = backgroundCardContentView else { return }
             let cardTransform = CGAffineTransform(translationX: 0, y: offset).scaledBy(x: scale, y: scale)
-            parentView.transform = (backgroundCardOriginalTransform ?? .identity).concatenating(cardTransform)
-            host.transform = backgroundCardOriginalHostTransform ?? .identity
+            contentView.transform = (backgroundCardOriginalTransform ?? .identity).concatenating(cardTransform)
             let originalRadius = backgroundCardOriginalCornerRadius ?? 0
             let targetRadius = configuration.backgroundCardCornerRadius.isFinite
                 ? max(0, configuration.backgroundCardCornerRadius) : 0
-            parentView.layer.cornerRadius = originalRadius + (targetRadius - originalRadius) * progress
-            parentView.layer.cornerCurve = .continuous
-            parentView.clipsToBounds = false
-            parentView.layer.masksToBounds = false
+            contentView.layer.cornerRadius = originalRadius + (targetRadius - originalRadius) * progress
+            contentView.layer.cornerCurve = .continuous
+            contentView.clipsToBounds = progress > 0
+            contentView.layer.masksToBounds = progress > 0
         case .snapshot:
-            backgroundCardInteractionScale = 1
             guard let snapshot = backgroundCardSnapshotView else { return }
             snapshot.isHidden = progress == 0
             snapshot.transform = CGAffineTransform(translationX: 0, y: offset).scaledBy(x: scale, y: scale)
@@ -87,34 +84,46 @@ extension DKPullUpController {
 
     /// Removes temporary card views and restores the parent's original appearance.
     func resetBackgroundCardEffect() {
-        if let parentView = backgroundCardTransformedView {
-            if let originalTransform = backgroundCardOriginalTransform {
-                parentView.transform = originalTransform
+        NSLayoutConstraint.deactivate(backgroundCardContentConstraints ?? [])
+        if let parentView = backgroundCardParentView {
+            for subview in backgroundCardOriginalSubviews ?? [] where subview.superview !== parentView {
+                if let host, subview === host { continue }
+                if let host, host.superview === parentView {
+                    parentView.insertSubview(subview, belowSubview: host)
+                } else {
+                    parentView.addSubview(subview)
+                }
             }
+            NSLayoutConstraint.activate(backgroundCardOriginalConstraints ?? [])
+            parentView.backgroundColor = backgroundCardOriginalParentBackgroundColor
+        }
+        if let contentView = backgroundCardContentView {
+            contentView.transform = backgroundCardOriginalTransform ?? .identity
             if let originalCornerRadius = backgroundCardOriginalCornerRadius {
-                parentView.layer.cornerRadius = originalCornerRadius
+                contentView.layer.cornerRadius = originalCornerRadius
             }
             if let originalCornerCurve = backgroundCardOriginalCornerCurve {
-                parentView.layer.cornerCurve = originalCornerCurve
+                contentView.layer.cornerCurve = originalCornerCurve
             }
             if let originalMasksToBounds = backgroundCardOriginalMasksToBounds {
-                parentView.layer.masksToBounds = originalMasksToBounds
+                contentView.layer.masksToBounds = originalMasksToBounds
             }
             if let originalClipsToBounds = backgroundCardOriginalClipsToBounds {
-                parentView.clipsToBounds = originalClipsToBounds
+                contentView.clipsToBounds = originalClipsToBounds
             }
+            contentView.removeFromSuperview()
         }
-        host?.transform = backgroundCardOriginalHostTransform ?? .identity
-        backgroundCardBackdropView?.removeFromSuperview()
-        backgroundCardBackdropView = nil
         backgroundCardSnapshotView?.removeFromSuperview()
         backgroundCardSnapshotView = nil
         host?.backgroundColor = .clear
         host?.passesTouchesThrough = true
-        backgroundCardInteractionScale = 1
-        backgroundCardTransformedView = nil
+        backgroundCardParentView = nil
+        backgroundCardContentView = nil
+        backgroundCardOriginalSubviews = nil
+        backgroundCardOriginalConstraints = nil
+        backgroundCardContentConstraints = nil
+        backgroundCardOriginalParentBackgroundColor = nil
         backgroundCardOriginalTransform = nil
-        backgroundCardOriginalHostTransform = nil
         backgroundCardOriginalCornerRadius = nil
         backgroundCardOriginalCornerCurve = nil
         backgroundCardOriginalMasksToBounds = nil
@@ -122,24 +131,78 @@ extension DKPullUpController {
         activeBackgroundCardContentMode = nil
     }
 
-    /// Saves the parent appearance and places a backdrop behind its transformed card.
+    /// Moves parent content into a transformable sibling while keeping the sheet host untransformed.
     private func installLiveBackgroundCard(parentView: UIView, host: SheetHostView) {
-        guard backgroundCardTransformedView == nil,
-              let superview = parentView.superview else { return }
-        backgroundCardTransformedView = parentView
-        backgroundCardOriginalTransform = parentView.transform
-        backgroundCardOriginalHostTransform = host.transform
-        backgroundCardOriginalCornerRadius = parentView.layer.cornerRadius
-        backgroundCardOriginalCornerCurve = parentView.layer.cornerCurve
-        backgroundCardOriginalMasksToBounds = parentView.layer.masksToBounds
-        backgroundCardOriginalClipsToBounds = parentView.clipsToBounds
+        guard backgroundCardContentView == nil else { return }
+        let originalSubviews = parentView.subviews.filter { $0 !== host }
+        let originalConstraints = parentView.constraints.filter { constraint in
+            constraint.isActive && (
+                originalSubviews.contains { contentSubview in
+                    if let firstView = constraint.firstItem as? UIView,
+                       firstView === contentSubview || firstView.isDescendant(of: contentSubview) {
+                        return true
+                    }
+                    if let secondView = constraint.secondItem as? UIView,
+                       secondView === contentSubview || secondView.isDescendant(of: contentSubview) {
+                        return true
+                    }
+                    return false
+                }
+            )
+        }
+        NSLayoutConstraint.deactivate(originalConstraints)
 
-        let backdrop = UIView(frame: parentView.frame)
-        backdrop.backgroundColor = configuration.backgroundCardBackdropColor
-        backdrop.isUserInteractionEnabled = false
-        backdrop.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        superview.insertSubview(backdrop, belowSubview: parentView)
-        backgroundCardBackdropView = backdrop
+        let contentView = UIView(frame: parentView.bounds)
+        contentView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        contentView.backgroundColor = parentView.backgroundColor
+        contentView.directionalLayoutMargins = parentView.directionalLayoutMargins
+        contentView.insetsLayoutMarginsFromSafeArea = parentView.insetsLayoutMarginsFromSafeArea
+        parentView.insertSubview(contentView, at: 0)
+
+        for subview in originalSubviews {
+            subview.removeFromSuperview()
+            contentView.addSubview(subview)
+        }
+
+        let contentConstraints = originalConstraints.map { constraint in
+            func mappedItem(_ item: Any?) -> Any? {
+                if let itemView = item as? UIView, itemView === parentView {
+                    return contentView
+                }
+                if let guide = item as? UILayoutGuide, guide.owningView === parentView {
+                    if guide === parentView.safeAreaLayoutGuide { return contentView.safeAreaLayoutGuide }
+                    if guide === parentView.layoutMarginsGuide { return contentView.layoutMarginsGuide }
+                }
+                return item
+            }
+
+            let copy = NSLayoutConstraint(
+                item: mappedItem(constraint.firstItem)!,
+                attribute: constraint.firstAttribute,
+                relatedBy: constraint.relation,
+                toItem: mappedItem(constraint.secondItem),
+                attribute: constraint.secondAttribute,
+                multiplier: constraint.multiplier,
+                constant: constraint.constant
+            )
+            copy.priority = constraint.priority
+            copy.identifier = constraint.identifier
+            copy.shouldBeArchived = constraint.shouldBeArchived
+            return copy
+        }
+        NSLayoutConstraint.activate(contentConstraints)
+
+        backgroundCardParentView = parentView
+        backgroundCardContentView = contentView
+        backgroundCardOriginalSubviews = originalSubviews
+        backgroundCardOriginalConstraints = originalConstraints
+        backgroundCardContentConstraints = contentConstraints
+        backgroundCardOriginalParentBackgroundColor = parentView.backgroundColor
+        backgroundCardOriginalTransform = contentView.transform
+        backgroundCardOriginalCornerRadius = contentView.layer.cornerRadius
+        backgroundCardOriginalCornerCurve = contentView.layer.cornerCurve
+        backgroundCardOriginalMasksToBounds = contentView.layer.masksToBounds
+        backgroundCardOriginalClipsToBounds = contentView.clipsToBounds
     }
 
     /// Adds the captured parent content below the sheet view.

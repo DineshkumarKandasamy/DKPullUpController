@@ -60,7 +60,7 @@ public enum DKPullUpBackgroundBlurStyle: Int {
 /// Selects whether the background card uses live content or a captured image.
 @objc(DKPullUpBackgroundCardContentMode)
 public enum DKPullUpBackgroundCardContentMode: Int {
-    /// Scales the parent view, keeping its controls interactive in their displayed positions.
+    /// Scales live parent content while keeping its controls interactive in their displayed positions.
     case live
     /// Scales a captured image and blocks touches outside the sheet.
     case snapshot

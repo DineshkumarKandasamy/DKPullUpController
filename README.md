@@ -130,7 +130,7 @@ sheet.configuration.backgroundCardCornerRadius = 24
 sheet.configuration.backgroundCardContentMode = .live
 ```
 
-In `.live` mode, the parent view itself scales, so its controls remain interactive at their visible positions while the sheet stays fixed. `.snapshot` scales a captured image instead and blocks touches outside the sheet until it is removed.
+In `.live` mode, the parent's content scales while its controls remain interactive at their visible positions and the sheet stays fixed. `.snapshot` scales a captured image instead and blocks touches outside the sheet until it is removed.
 
 ## Objective-C
 
@@ -222,7 +222,7 @@ sheet.configuration = configuration
 | `backgroundCardVerticalOffset` | `24` | Vertical translation in points at the sheet's maximum height; positive values move down. |
 | `backgroundCardCornerRadius` | `24` | Corner radius, in points, at the sheet's maximum height. Negative and non-finite values become zero. |
 | `backgroundCardBackdropColor` | `.systemBackground` | Color visible around the scaled background card. |
-| `backgroundCardContentMode` | `.live` | `.live` transforms the actual parent view to keep its controls interactive and aligned; `.snapshot` scales a captured image and blocks touches outside the sheet. |
+| `backgroundCardContentMode` | `.live` | `.live` scales the parent's content while keeping its controls interactive and aligned; `.snapshot` scales a captured image and blocks touches outside the sheet. |
 | `defaultDragHandleColor` | `.tertiaryLabel` | Built-in handle color. |
 | `defaultDragHandleWidth` | `40` | Built-in handle width in points. Negative and non-finite values become zero. |
 | `defaultDragHandleHeight` | `5` | Built-in handle height in points. Negative and non-finite values become zero. |
@@ -345,6 +345,8 @@ All controller operations must run on the main actor.
 ## Example
 
 Open [DKPullUpExample.xcodeproj](Example/DKPullUpExample.xcodeproj) and choose either the `DKPullUpExample` (Swift) or `DKPullUpObjCExample` (Objective-C) scheme. Both targets reference this package locally. A physical device requires a signing team configured in Xcode.
+
+![Pull-up sheet normal flow and background card effect](Assets/DKPullUpControllerDemo.gif)
 
 ## License
 
