@@ -15,6 +15,8 @@
 		A10000000000000000000006 /* DKPullUpController in Frameworks */ = {isa = PBXBuildFile; productRef = A90000000000000000000003 /* DKPullUpController */; };
 		A10000000000000000000007 /* ExampleSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000007 /* ExampleSheetViewController.swift */; };
 		A10000000000000000000008 /* ExampleSheetViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000008 /* ExampleSheetViewController.m */; };
+		A10000000000000000000009 /* SharedAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000010 /* SharedAssets.xcassets */; };
+		A1000000000000000000000A /* SharedAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000010 /* SharedAssets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +29,7 @@
 		A20000000000000000000007 /* ExampleSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleSheetViewController.swift; sourceTree = "<group>"; };
 		A20000000000000000000008 /* ExampleSheetViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ExampleSheetViewController.m; sourceTree = "<group>"; };
 		A20000000000000000000009 /* ExampleSheetViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ExampleSheetViewController.h; sourceTree = "<group>"; };
+		A20000000000000000000010 /* SharedAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = SharedAssets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -46,6 +49,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A30000000000000000000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000009 /* SharedAssets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A30000000000000000000004 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1000000000000000000000A /* SharedAssets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -54,6 +73,7 @@
 			children = (
 				A40000000000000000000002 /* DKPullUpExample */,
 				A40000000000000000000004 /* DKPullUpObjCExample */,
+				A20000000000000000000010 /* SharedAssets.xcassets */,
 				A40000000000000000000003 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -97,6 +117,7 @@
 			buildPhases = (
 				A60000000000000000000001 /* Sources */,
 				A30000000000000000000001 /* Frameworks */,
+				A30000000000000000000003 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -116,6 +137,7 @@
 			buildPhases = (
 				A60000000000000000000002 /* Sources */,
 				A30000000000000000000002 /* Frameworks */,
+				A30000000000000000000004 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -210,6 +232,7 @@
 				DEVELOPMENT_TEAM = AAAN2V29U5;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				PRODUCT_BUNDLE_IDENTIFIER = com.dineshkumar.dkpullup.exampleapp;
@@ -224,6 +247,7 @@
 				DEVELOPMENT_TEAM = AAAN2V29U5;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				PRODUCT_BUNDLE_IDENTIFIER = com.dineshkumar.dkpullup.exampleapp;
@@ -240,6 +264,7 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -257,6 +282,7 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
