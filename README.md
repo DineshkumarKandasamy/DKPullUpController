@@ -10,11 +10,17 @@ A UIKit child controller for a draggable sheet with configurable snap positions 
 
 ## Installation
 
-Add this package to an Xcode project using **File > Add Package Dependencies**. For a local Swift package, use a path dependency:
+In Xcode, choose **File > Add Package Dependencies** and enter:
+
+```text
+https://github.com/DineshkumarKandasamy/DKPullUpController
+```
+
+For a Swift package, add the dependency to `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(path: "../DKPullUpController")
+    .package(url: "https://github.com/DineshkumarKandasamy/DKPullUpController", from: "1.0.0")
 ],
 targets: [
     .target(
@@ -24,7 +30,7 @@ targets: [
 ]
 ```
 
-The path and package identifier must match the package's location in your project. After publishing, use your repository URL and an appropriate version instead.
+The version requirement needs a matching release tag in the repository.
 
 ## Usage
 
