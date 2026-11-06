@@ -34,7 +34,7 @@ The version requirement needs a matching release tag in the repository.
 
 ## Usage
 
-Subclass the controller and provide the sheet's content. The controller does not create its own handle or content views.
+Subclass the controller and provide the sheet's content. A default drag handle is shown at the top of the sheet.
 
 ```swift
 import DKPullUpController
@@ -59,7 +59,17 @@ Call `move(to:animated:completion:)` to move the sheet, `updatePreferredFrame(an
 
 For content shorter than the scroll view, set `alwaysBounceVertical = true` on the scroll view if it should still initiate sheet drags.
 
-The sheet's own pan gesture starts on its root view. Use `setDragHandleView(_:)` to restrict it to a descendant, or pass `nil` to restore it to the root view. The gesture is available as `pullUpPanGestureRecognizer` after the view loads; keep its delegate and target intact.
+The default handle is centered at the top of the sheet and does not reserve space for content. Its appearance can be changed before or after presentation:
+
+```swift
+sheet.configuration.defaultDragHandleColor = .systemTeal
+sheet.configuration.defaultDragHandleWidth = 48
+sheet.configuration.defaultDragHandleHeight = 6
+sheet.configuration.defaultDragHandleCornerRadius = 3
+sheet.configuration.defaultDragHandleTopInset = 10
+```
+
+Set `showsDefaultDragHandle` to `false` to hide it. The sheet's own pan gesture starts on its root view. Use `setDragHandleView(_:)` to hide the default handle and restrict the gesture to a custom descendant, or pass `nil` to return to the configured default handle and the root-view gesture. The gesture is available as `pullUpPanGestureRecognizer` after the view loads; keep its delegate and target intact.
 
 ## Configuration
 
@@ -75,6 +85,11 @@ Set `configuration` before or after adding the sheet. Changes update its layout 
 | `isSnappingEnabled` | `true` | Settle on a snap position when a drag ends. |
 | `allowsScrollDragBounce` | `false` | Allow scroll-driven movement beyond snap positions by `bounceOffset`. |
 | `maximumNumberOfTouches` | `1` | Maximum touches accepted by the sheet pan gesture. |
+| `showsDefaultDragHandle` | `true` | Show the built-in handle when no custom handle is selected. |
+| `defaultDragHandleColor` | `.tertiaryLabel` | Color of the built-in handle. |
+| `defaultDragHandleWidth`, `defaultDragHandleHeight` | `40`, `5` | Size of the built-in handle in points. |
+| `defaultDragHandleCornerRadius` | `2.5` | Corner radius of the built-in handle in points. |
+| `defaultDragHandleTopInset` | `10` | Distance from the sheet's top edge in points. |
 | `presentationDuration`, `dismissalDuration`, `movementDuration` | `0.3` | Animation durations in seconds. |
 | `minimumSnapDuration`, `maximumSnapDuration` | `0.08`, `0.3` | Duration bounds in seconds for release animations. |
 | `usesVelocityForSnapDuration` | `true` | Scale release duration by distance and speed. When false or velocity is zero, use the maximum duration. |

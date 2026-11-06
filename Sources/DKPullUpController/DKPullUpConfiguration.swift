@@ -5,7 +5,7 @@
 //  Created by Dineshkumar Kandasamy on 06/11/26.
 //
 
-import Foundation
+import UIKit
 
 /// Settings for positioning, dragging, and animating a pull-up sheet.
 ///
@@ -55,6 +55,22 @@ public struct DKPullUpConfiguration {
     /// Maximum touches accepted by the sheet pan gesture. Values below one are
     /// treated as one. Defaults to `1`.
     public var maximumNumberOfTouches = 1
+    /// Shows the built-in handle when no custom handle is selected. Defaults to `true`.
+    public var showsDefaultDragHandle = true
+    /// Color of the built-in handle. Defaults to the dynamic tertiary label color.
+    public var defaultDragHandleColor: UIColor = .tertiaryLabel
+    /// Width of the built-in handle in points. Defaults to `40`.
+    /// Negative or non-finite values are treated as zero.
+    public var defaultDragHandleWidth: CGFloat = 40
+    /// Height of the built-in handle in points. Defaults to `5`.
+    /// Negative or non-finite values are treated as zero.
+    public var defaultDragHandleHeight: CGFloat = 5
+    /// Corner radius of the built-in handle in points. Defaults to `2.5`.
+    /// Negative or non-finite values are treated as zero.
+    public var defaultDragHandleCornerRadius: CGFloat = 2.5
+    /// Distance from the sheet's top edge in points. Defaults to `10`.
+    /// Negative or non-finite values are treated as zero.
+    public var defaultDragHandleTopInset: CGFloat = 10
     /// Presentation animation duration in seconds. Defaults to `0.3`.
     public var presentationDuration: TimeInterval = 0.3
     /// Dismissal animation duration in seconds. Defaults to `0.3`.

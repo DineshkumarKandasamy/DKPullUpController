@@ -22,6 +22,7 @@ extension DKPullUpController {
     }
 
     func configurationDidChange() {
+        updateDefaultDragHandle()
         sheetPan?.maximumNumberOfTouches = max(1, configuration.maximumNumberOfTouches)
         if !configuration.isScrollDraggingEnabled {
             restoreScrollBounce()

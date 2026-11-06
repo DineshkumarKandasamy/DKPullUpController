@@ -46,6 +46,11 @@ final class ExampleViewController: UIViewController {
             stack.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor)
         ])
         sheet.configuration.layoutMode = .bottom
+        sheet.configuration.defaultDragHandleColor = .systemTeal
+        sheet.configuration.defaultDragHandleWidth = 48
+        sheet.configuration.defaultDragHandleHeight = 6
+        sheet.configuration.defaultDragHandleCornerRadius = 3
+        sheet.configuration.defaultDragHandleTopInset = 10
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -112,12 +117,6 @@ private final class ExampleSheet: DKPullUpController, UITableViewDataSource {
         view.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         view.clipsToBounds = true
 
-        let handle = UIView()
-        handle.backgroundColor = .tertiaryLabel
-        handle.layer.cornerRadius = 2.5
-        handle.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(handle)
-
         let heading = UILabel()
         heading.text = "Library"
         heading.font = .preferredFont(forTextStyle: .title2)
@@ -132,11 +131,7 @@ private final class ExampleSheet: DKPullUpController, UITableViewDataSource {
         list.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(list)
         NSLayoutConstraint.activate([
-            handle.topAnchor.constraint(equalTo: view.topAnchor, constant: 10),
-            handle.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            handle.widthAnchor.constraint(equalToConstant: 40),
-            handle.heightAnchor.constraint(equalToConstant: 5),
-            heading.topAnchor.constraint(equalTo: handle.bottomAnchor, constant: 18),
+            heading.topAnchor.constraint(equalTo: view.topAnchor, constant: 34),
             heading.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             heading.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
             list.topAnchor.constraint(equalTo: heading.bottomAnchor, constant: 12),

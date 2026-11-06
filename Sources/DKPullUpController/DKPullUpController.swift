@@ -71,6 +71,11 @@ open class DKPullUpController: UIViewController {
     var host: SheetHostView?
     var sheetPan: UIPanGestureRecognizer?
     var panDelegate: SheetPanDelegate?
+    private let defaultDragHandle = UIView()
+    private var defaultDragHandleWidth: NSLayoutConstraint?
+    private var defaultDragHandleHeight: NSLayoutConstraint?
+    private var defaultDragHandleTop: NSLayoutConstraint?
+    private var usesCustomDragHandle = false
     weak var scrollView: UIScrollView?
     var savedScrollBounce: Bool?
     var scrollMovedSheet = false
@@ -85,6 +90,16 @@ open class DKPullUpController: UIViewController {
     /// must call `super.viewDidLoad()`.
     open override func viewDidLoad() {
         super.viewDidLoad()
+        defaultDragHandle.isUserInteractionEnabled = false
+        defaultDragHandle.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(defaultDragHandle)
+        defaultDragHandleTop = defaultDragHandle.topAnchor.constraint(equalTo: view.topAnchor)
+        defaultDragHandleWidth = defaultDragHandle.widthAnchor.constraint(equalToConstant: 0)
+        defaultDragHandleHeight = defaultDragHandle.heightAnchor.constraint(equalToConstant: 0)
+        NSLayoutConstraint.activate([
+            defaultDragHandleTop, defaultDragHandleWidth, defaultDragHandleHeight,
+            defaultDragHandle.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+        ].compactMap { $0 })
         let recognizer = UIPanGestureRecognizer(target: self, action: #selector(handleSheetPan(_:)))
         let delegate = SheetPanDelegate(controller: self)
         recognizer.delegate = delegate
@@ -92,6 +107,25 @@ open class DKPullUpController: UIViewController {
         sheetPan = recognizer
         view.addGestureRecognizer(recognizer)
         configurationDidChange()
+    }
+
+    open override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        view.bringSubviewToFront(defaultDragHandle)
+    }
+
+    func updateDefaultDragHandle() {
+        guard isViewLoaded else { return }
+        defaultDragHandle.backgroundColor = configuration.defaultDragHandleColor
+        defaultDragHandle.layer.cornerRadius = validHandleDimension(configuration.defaultDragHandleCornerRadius)
+        defaultDragHandleWidth?.constant = validHandleDimension(configuration.defaultDragHandleWidth)
+        defaultDragHandleHeight?.constant = validHandleDimension(configuration.defaultDragHandleHeight)
+        defaultDragHandleTop?.constant = validHandleDimension(configuration.defaultDragHandleTopInset)
+        defaultDragHandle.isHidden = usesCustomDragHandle || !configuration.showsDefaultDragHandle
+    }
+
+    private func validHandleDimension(_ value: CGFloat) -> CGFloat {
+        value.isFinite ? max(0, value) : 0
     }
 
     /// Called before a programmatic or release movement begins.
@@ -307,7 +341,7 @@ open class DKPullUpController: UIViewController {
 
     /// Moves the sheet's pan gesture to a designated handle view.
     /// - Parameter handle: The sheet root or one of its descendants. Pass `nil`
-    ///   to restore the gesture to the root view.
+    ///   to restore the default handle and the gesture on the root view.
     /// - Returns: `true` when the gesture is attached; otherwise `false` and the
     ///   existing attachment remains unchanged.
     @discardableResult
@@ -317,6 +351,8 @@ open class DKPullUpController: UIViewController {
         let destination = handle ?? root
         guard destination === root || destination.isDescendant(of: root) else { return false }
         destination.addGestureRecognizer(recognizer)
+        usesCustomDragHandle = handle != nil
+        updateDefaultDragHandle()
         return true
     }
 }
