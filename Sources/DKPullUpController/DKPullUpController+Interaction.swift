@@ -7,7 +7,13 @@
 
 import UIKit
 
+/// Coordinates layout, animation, and gesture interactions for ``DKPullUpController``.
+///
+/// Positions the sheet for bottom and side layouts, updates it when configuration
+/// changes, and coordinates sheet gestures with an attached scroll view. These
+/// internal helpers support the controller's public presentation and movement API.
 extension DKPullUpController {
+    /// Indicates whether the current parent bounds select side layout.
     var usesSideLayout: Bool {
         guard let host else { return false }
         switch configuration.layoutMode {
@@ -17,11 +23,16 @@ extension DKPullUpController {
         }
     }
 
+    /// Replaces invalid durations with zero and clamps negative durations to zero.
     func validDuration(_ value: TimeInterval) -> TimeInterval {
         value.isFinite ? max(0, value) : 0
     }
 
+    /// Applies configuration changes to the drag handle, gestures, and sheet layout.
     func configurationDidChange() {
+        updateDefaultDragHandle()
+        updateBackgroundBlur()
+        updateBackgroundCardEffect()
         sheetPan?.maximumNumberOfTouches = max(1, configuration.maximumNumberOfTouches)
         if !configuration.isScrollDraggingEnabled {
             restoreScrollBounce()
@@ -32,10 +43,12 @@ extension DKPullUpController {
         refreshLayout()
     }
 
+    /// Enables sheet dragging only when allowed by configuration and layout state.
     func updatePanAvailability() {
         sheetPan?.isEnabled = configuration.isDraggingEnabled && !usesSideLayout && !isRemoving
     }
 
+    /// Calculates the sheet frame for the active layout within the given bounds.
     func sheetFrame(in bounds: CGRect) -> CGRect {
         if usesSideLayout {
             let frame = preferredLandscapeFrame
@@ -58,6 +71,7 @@ extension DKPullUpController {
         return CGRect(x: horizontalPosition, y: bounds.maxY - inset - visibleHeight, width: width, height: height)
     }
 
+    /// Reconciles the sheet's position and pan gesture with the current layout.
     func refreshLayout() {
         guard let host, !isRemoving else { return }
         let isSide = usesSideLayout
@@ -71,9 +85,11 @@ extension DKPullUpController {
         }
         lastLayoutWasSide = isSide
         updatePanAvailability()
+        updateBackgroundCardProgress(to: visibleHeight)
         view.frame = sheetFrame(in: host.bounds)
     }
 
+    /// Moves an attached sheet to a destination and reports animation completion.
     func moveSheet(to destination: CGFloat, duration: TimeInterval, completion: ((Bool) -> Void)?) {
         guard let host, !isRemoving else {
             completion?(false)
@@ -84,12 +100,14 @@ extension DKPullUpController {
         let frame = sheetFrame(in: host.bounds)
         animatePullUp(action: .move, duration: validDuration(duration), animations: { [weak self] in
             self?.view.frame = frame
+            self?.updateBackgroundCardProgress(to: destination)
         }, completion: { [weak self] finished in
             if finished { self?.pullUpDidMove(to: destination) }
             completion?(finished)
         })
     }
 
+    /// Settles the sheet at its bounded release position or selected snap point.
     func settle(velocity: CGFloat) {
         let proposed = configuration.isSnappingEnabled
             ? targetSnapPoint(for: visibleHeight, velocity: velocity, points: snapPoints) : visibleHeight
@@ -98,11 +116,13 @@ extension DKPullUpController {
         moveSheet(to: destination, duration: duration, completion: nil)
     }
 
+    /// Restores the attached scroll view's bounce setting saved for sheet dragging.
     func restoreScrollBounce() {
         if let savedScrollBounce { scrollView?.bounces = savedScrollBounce }
         savedScrollBounce = nil
     }
 
+    /// Updates the sheet position in response to its own pan gesture.
     @objc func handleSheetPan(_ recognizer: UIPanGestureRecognizer) {
         guard let host, !usesSideLayout, !isRemoving else { return }
         switch recognizer.state {
@@ -110,6 +130,7 @@ extension DKPullUpController {
             let translation = recognizer.translation(in: host).y
             visibleHeight = physics.clamp(visibleHeight - translation, overshoot: bounceOffset)
             view.frame = sheetFrame(in: host.bounds)
+            updateBackgroundCardProgress(to: visibleHeight)
             recognizer.setTranslation(.zero, in: host)
             pullUpDidDrag(to: visibleHeight)
         case .ended:
@@ -120,6 +141,7 @@ extension DKPullUpController {
         }
     }
 
+    /// Coordinates an attached scroll view's pan gesture with sheet dragging.
     @objc func handleScrollPan(_ recognizer: UIPanGestureRecognizer) {
         guard let scrollView, let host, configuration.isScrollDraggingEnabled, !usesSideLayout, !isRemoving else {
             restoreScrollBounce()
@@ -140,6 +162,7 @@ extension DKPullUpController {
                 let allowance = configuration.allowsScrollDragBounce ? bounceOffset : 0
                 visibleHeight = physics.clamp(visibleHeight - translation, overshoot: allowance)
                 view.frame = sheetFrame(in: host.bounds)
+                updateBackgroundCardProgress(to: visibleHeight)
                 pullUpDidDrag(to: visibleHeight)
                 scrollMovedSheet = true
             }

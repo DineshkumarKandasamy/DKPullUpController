@@ -9,7 +9,7 @@ import DKPullUpController
 import UIKit
 
 final class ExampleViewController: UIViewController {
-    private let sheet = ExampleSheet()
+    private let sheet = ExampleSheetViewController()
     private let positions = UISegmentedControl(items: ["Small", "Medium", "Large"])
     private let layout = UISegmentedControl(items: ["Bottom", "Auto", "Side"])
     private var visibilityButton: UIBarButtonItem?
@@ -46,6 +46,16 @@ final class ExampleViewController: UIViewController {
             stack.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor)
         ])
         sheet.configuration.layoutMode = .bottom
+        sheet.configuration.defaultDragHandleColor = .systemTeal
+        sheet.configuration.defaultDragHandleWidth = 48
+        sheet.configuration.defaultDragHandleHeight = 6
+        sheet.configuration.defaultDragHandleCornerRadius = 3
+        sheet.configuration.defaultDragHandleTopInset = 10
+        sheet.configuration.isBackgroundCardEffectEnabled = true
+        sheet.configuration.backgroundCardScale = 0.5
+        sheet.configuration.backgroundCardVerticalOffset = 5
+        sheet.configuration.backgroundCardCornerRadius = 16
+        sheet.configuration.backgroundCardContentMode = .live
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -90,71 +100,5 @@ final class ExampleViewController: UIViewController {
         case 2: sheet.configuration.layoutMode = .side
         default: sheet.configuration.layoutMode = .bottom
         }
-    }
-}
-
-private final class ExampleSheet: DKPullUpController, UITableViewDataSource {
-    private let list = UITableView(frame: .zero, style: .plain)
-    private let items = ["Overview", "Favorites", "Recent", "Collections", "Saved", "Shared", "Archive", "Settings"]
-
-    override var preferredPullUpSize: CGSize {
-        let bounds = parent?.view.bounds ?? .zero
-        let safeTop = parent?.view.safeAreaInsets.top ?? 0
-        return CGSize(width: bounds.width, height: min(600, max(0, bounds.height - safeTop - 24)))
-    }
-
-    override var middleSnapPoints: [CGFloat] { [320] }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        view.backgroundColor = .secondarySystemGroupedBackground
-        view.layer.cornerRadius = 16
-        view.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        view.clipsToBounds = true
-
-        let handle = UIView()
-        handle.backgroundColor = .tertiaryLabel
-        handle.layer.cornerRadius = 2.5
-        handle.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(handle)
-
-        let heading = UILabel()
-        heading.text = "Library"
-        heading.font = .preferredFont(forTextStyle: .title2)
-        heading.adjustsFontForContentSizeCategory = true
-        heading.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(heading)
-
-        list.dataSource = self
-        list.backgroundColor = .clear
-        list.alwaysBounceVertical = true
-        list.register(UITableViewCell.self, forCellReuseIdentifier: "Item")
-        list.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(list)
-        NSLayoutConstraint.activate([
-            handle.topAnchor.constraint(equalTo: view.topAnchor, constant: 10),
-            handle.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            handle.widthAnchor.constraint(equalToConstant: 40),
-            handle.heightAnchor.constraint(equalToConstant: 5),
-            heading.topAnchor.constraint(equalTo: handle.bottomAnchor, constant: 18),
-            heading.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
-            heading.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
-            list.topAnchor.constraint(equalTo: heading.bottomAnchor, constant: 12),
-            list.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            list.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            list.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
-        attach(scrollView: list)
-    }
-
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int { items.count }
-
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Item", for: indexPath)
-        var content = cell.defaultContentConfiguration()
-        content.text = items[indexPath.row]
-        cell.contentConfiguration = content
-        cell.backgroundColor = .clear
-        return cell
     }
 }
