@@ -12,5 +12,8 @@ let package = Package(
     name: "DKPullUpController",
     platforms: [.iOS(.v17)],
     products: [.library(name: "DKPullUpController", targets: ["DKPullUpController"])],
-    targets: [.target(name: "DKPullUpController")]
+    targets: [
+        .target(name: "DKPullUpController"),
+        .testTarget(name: "DKPullUpControllerTests", dependencies: ["DKPullUpController"])
+    ]
 )
