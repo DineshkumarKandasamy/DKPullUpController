@@ -19,5 +19,8 @@ jobs:
           fi
           xcodebuild test -scheme DKPullUpController -destination "platform=iOS Simulator,id=$SIMULATOR_ID"
 
+      - name: Build Swift example
+        run: xcodebuild build -project Example/DKPullUpExample.xcodeproj -scheme DKPullUpExample -destination 'generic/platform=iOS Simulator'
+
       - name: Build Objective-C example
         run: xcodebuild build -project Example/DKPullUpExample.xcodeproj -scheme DKPullUpObjCExample -destination 'generic/platform=iOS Simulator'
