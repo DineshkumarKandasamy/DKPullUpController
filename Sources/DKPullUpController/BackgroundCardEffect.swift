@@ -85,6 +85,7 @@ extension DKPullUpController {
     /// Removes temporary card views and restores the parent's original appearance.
     func resetBackgroundCardEffect() {
         NSLayoutConstraint.deactivate(backgroundCardContentConstraints ?? [])
+        NSLayoutConstraint.deactivate(backgroundCardContainerConstraints ?? [])
         if let parentView = backgroundCardParentView {
             for subview in backgroundCardOriginalSubviews ?? [] where subview.superview !== parentView {
                 if let host, subview === host { continue }
@@ -121,6 +122,7 @@ extension DKPullUpController {
         backgroundCardContentView = nil
         backgroundCardOriginalSubviews = nil
         backgroundCardOriginalConstraints = nil
+        backgroundCardContainerConstraints = nil
         backgroundCardContentConstraints = nil
         backgroundCardOriginalParentBackgroundColor = nil
         backgroundCardOriginalTransform = nil
@@ -152,12 +154,19 @@ extension DKPullUpController {
         }
         NSLayoutConstraint.deactivate(originalConstraints)
 
-        let contentView = UIView(frame: parentView.bounds)
-        contentView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        let contentView = UIView()
+        contentView.translatesAutoresizingMaskIntoConstraints = false
         contentView.backgroundColor = parentView.backgroundColor
         contentView.directionalLayoutMargins = parentView.directionalLayoutMargins
         contentView.insetsLayoutMarginsFromSafeArea = parentView.insetsLayoutMarginsFromSafeArea
         parentView.insertSubview(contentView, at: 0)
+        let containerConstraints = [
+            contentView.leadingAnchor.constraint(equalTo: parentView.leadingAnchor),
+            contentView.trailingAnchor.constraint(equalTo: parentView.trailingAnchor),
+            contentView.topAnchor.constraint(equalTo: parentView.topAnchor),
+            contentView.bottomAnchor.constraint(equalTo: parentView.bottomAnchor)
+        ]
+        NSLayoutConstraint.activate(containerConstraints)
 
         for subview in originalSubviews {
             subview.removeFromSuperview()
@@ -165,6 +174,7 @@ extension DKPullUpController {
         }
 
         let contentConstraints = originalConstraints.map { constraint in
+            @MainActor
             func mappedItem(_ item: Any?) -> Any? {
                 if let itemView = item as? UIView, itemView === parentView {
                     return contentView
@@ -196,6 +206,7 @@ extension DKPullUpController {
         backgroundCardContentView = contentView
         backgroundCardOriginalSubviews = originalSubviews
         backgroundCardOriginalConstraints = originalConstraints
+        backgroundCardContainerConstraints = containerConstraints
         backgroundCardContentConstraints = contentConstraints
         backgroundCardOriginalParentBackgroundColor = parentView.backgroundColor
         backgroundCardOriginalTransform = contentView.transform

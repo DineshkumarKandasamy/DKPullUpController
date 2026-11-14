@@ -255,6 +255,7 @@ open class DKPullUpController: UIViewController {
     var backgroundCardContentView: UIView?
     var backgroundCardOriginalSubviews: [UIView]?
     var backgroundCardOriginalConstraints: [NSLayoutConstraint]?
+    var backgroundCardContainerConstraints: [NSLayoutConstraint]?
     var backgroundCardContentConstraints: [NSLayoutConstraint]?
     var backgroundCardOriginalParentBackgroundColor: UIColor?
     var backgroundCardOriginalTransform: CGAffineTransform?
