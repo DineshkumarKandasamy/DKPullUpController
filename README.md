@@ -99,7 +99,7 @@ Call `move(to:animated:completion:)` to move the sheet, `updatePreferredFrame(an
 
 For content shorter than the scroll view, set `alwaysBounceVertical = true` on the scroll view if it should still initiate sheet drags.
 
-The default handle is centered at the top of the sheet and does not reserve space for content. Its appearance can be changed before or after presentation:
+The default handle is centered at the top of the sheet and does not reserve space for content. It is an adjustable VoiceOver control: swipe up or down to move between snap points. Custom drag handles should provide equivalent accessibility actions. Its appearance can be changed before or after presentation:
 
 ```swift
 sheet.configuration.defaultDragHandleColor = .systemTeal
@@ -131,6 +131,8 @@ sheet.configuration.backgroundCardContentMode = .live
 ```
 
 In `.live` mode, the parent's content scales while its controls remain interactive at their visible positions and the sheet stays fixed. `.snapshot` scales a captured image instead and blocks touches outside the sheet until it is removed.
+
+When Reduce Motion is enabled, sheet transitions are immediate and background-card scaling, translation, and corner-radius effects are suppressed.
 
 ## Objective-C
 
@@ -217,7 +219,7 @@ sheet.configuration = configuration
 | `showsDefaultDragHandle` | `true` | Shows the built-in handle when a custom handle has not been selected. |
 | `isBackgroundBlurEnabled` | `false` | Enables the built-in blur behind the sheet content. A custom content view must be transparent where the blur should show through. |
 | `backgroundBlurStyle` | `.systemMaterial` | Blur material: `.systemUltraThinMaterial`, `.systemThinMaterial`, `.systemMaterial`, `.systemThickMaterial`, `.systemChromeMaterial`, `.light`, or `.dark`. Used when background blur is enabled. |
-| `isBackgroundCardEffectEnabled` | `false` | Scales and rounds the parent screen as the sheet rises. |
+| `isBackgroundCardEffectEnabled` | `false` | Scales and rounds the parent screen as the sheet rises; these effects are suppressed when Reduce Motion is enabled. |
 | `backgroundCardScale` | `0.9` | Scale of the background card at the sheet's maximum height. Values outside `(0, 1]` use `1`. |
 | `backgroundCardVerticalOffset` | `24` | Vertical translation in points at the sheet's maximum height; positive values move down. |
 | `backgroundCardCornerRadius` | `24` | Corner radius, in points, at the sheet's maximum height. Negative and non-finite values become zero. |
@@ -228,9 +230,9 @@ sheet.configuration = configuration
 | `defaultDragHandleHeight` | `5` | Built-in handle height in points. Negative and non-finite values become zero. |
 | `defaultDragHandleCornerRadius` | `2.5` | Built-in handle corner radius in points. Negative and non-finite values become zero. |
 | `defaultDragHandleTopInset` | `10` | Distance from the sheet's top edge to the built-in handle. Negative and non-finite values become zero. |
-| `presentationDuration` | `0.3` | Presentation animation duration in seconds. |
-| `dismissalDuration` | `0.3` | Dismissal animation duration in seconds. |
-| `movementDuration` | `0.3` | Duration for programmatic moves and preferred-frame updates. |
+| `presentationDuration` | `0.3` | Presentation animation duration in seconds; transitions are immediate when Reduce Motion is enabled. |
+| `dismissalDuration` | `0.3` | Dismissal animation duration in seconds; transitions are immediate when Reduce Motion is enabled. |
+| `movementDuration` | `0.3` | Duration for programmatic moves and preferred-frame updates; transitions are immediate when Reduce Motion is enabled. |
 | `minimumSnapDuration` | `0.08` | Minimum release-animation duration in seconds, limited to `maximumSnapDuration`. |
 | `maximumSnapDuration` | `0.3` | Maximum release-animation duration in seconds. |
 | `usesVelocityForSnapDuration` | `true` | Calculates release duration from distance and speed. When disabled, the maximum duration is used. |

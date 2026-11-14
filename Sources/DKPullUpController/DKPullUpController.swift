@@ -7,6 +7,20 @@
 
 import UIKit
 
+@MainActor
+private final class PullUpAccessibilityHandleView: UIView {
+    var onIncrement: (() -> Void)?
+    var onDecrement: (() -> Void)?
+
+    override func accessibilityIncrement() {
+        onIncrement?()
+    }
+
+    override func accessibilityDecrement() {
+        onDecrement?()
+    }
+}
+
 /// A child controller whose content can be dragged between visible heights.
 ///
 /// Subclass this controller to provide the sheet's content and preferred size,
@@ -225,7 +239,9 @@ open class DKPullUpController: UIViewController {
 
     /// Current bottom-layout height in points above the bottom inset. In side
     /// layout, this retains the bottom-layout height rather than the side height.
-    @objc public internal(set) var visibleHeight: CGFloat = 0
+    @objc public internal(set) var visibleHeight: CGFloat = 0 {
+        didSet { updateDefaultDragHandleAccessibilityValue() }
+    }
     /// The sheet's pan gesture after its view loads, or `nil` before then.
     /// Keep its target and delegate intact so sheet dragging continues to work.
     @objc public var pullUpPanGestureRecognizer: UIPanGestureRecognizer? { sheetPan }
@@ -264,7 +280,7 @@ open class DKPullUpController: UIViewController {
     var backgroundCardOriginalMasksToBounds: Bool?
     var backgroundCardOriginalClipsToBounds: Bool?
     var activeBackgroundCardContentMode: DKPullUpBackgroundCardContentMode?
-    private let defaultDragHandle = UIView()
+    private let defaultDragHandle = PullUpAccessibilityHandleView()
     private let backgroundBlurView = UIVisualEffectView()
     private var defaultDragHandleWidth: NSLayoutConstraint?
     private var defaultDragHandleHeight: NSLayoutConstraint?
@@ -294,6 +310,12 @@ open class DKPullUpController: UIViewController {
         ])
         updatePullUpContentView()
         defaultDragHandle.isUserInteractionEnabled = false
+        defaultDragHandle.isAccessibilityElement = true
+        defaultDragHandle.accessibilityLabel = "Sheet height"
+        defaultDragHandle.accessibilityHint = "Swipe up or down to adjust the sheet height."
+        defaultDragHandle.accessibilityTraits = .adjustable
+        defaultDragHandle.onIncrement = { [weak self] in self?.adjustToAdjacentSnapPoint(expanding: true) }
+        defaultDragHandle.onDecrement = { [weak self] in self?.adjustToAdjacentSnapPoint(expanding: false) }
         defaultDragHandle.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(defaultDragHandle)
         defaultDragHandleTop = defaultDragHandle.topAnchor.constraint(equalTo: view.topAnchor)
@@ -309,6 +331,12 @@ open class DKPullUpController: UIViewController {
         panDelegate = delegate
         sheetPan = recognizer
         view.addGestureRecognizer(recognizer)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(reduceMotionStatusDidChange(_:)),
+            name: UIAccessibility.reduceMotionStatusDidChangeNotification,
+            object: nil
+        )
         configurationDidChange()
     }
 
@@ -346,6 +374,26 @@ open class DKPullUpController: UIViewController {
         defaultDragHandleHeight?.constant = validHandleDimension(configuration.defaultDragHandleHeight)
         defaultDragHandleTop?.constant = validHandleDimension(configuration.defaultDragHandleTopInset)
         defaultDragHandle.isHidden = usesCustomDragHandle || !configuration.showsDefaultDragHandle
+        defaultDragHandle.isAccessibilityElement = !defaultDragHandle.isHidden && !usesSideLayout
+        updateDefaultDragHandleAccessibilityValue()
+    }
+
+    private func updateDefaultDragHandleAccessibilityValue() {
+        guard isViewLoaded else { return }
+        defaultDragHandle.accessibilityValue = "\(Int(visibleHeight.rounded())) points"
+    }
+
+    private func adjustToAdjacentSnapPoint(expanding: Bool) {
+        guard host != nil, !isRemoving, !usesSideLayout else { return }
+        let points = snapPoints
+        guard let currentIndex = points.firstIndex(of: physics.nearest(to: visibleHeight)) else { return }
+        let destinationIndex = expanding ? currentIndex + 1 : currentIndex - 1
+        guard points.indices.contains(destinationIndex) else { return }
+        move(to: points[destinationIndex], animated: true)
+    }
+
+    @objc private func reduceMotionStatusDidChange(_ notification: Notification) {
+        updateBackgroundCardProgress(to: visibleHeight)
     }
 
     /// Applies the configured blur style or removes the blur when disabled.
@@ -507,6 +555,7 @@ open class DKPullUpController: UIViewController {
             self?.refreshLayout()
         }
         host = container
+        updateDefaultDragHandle()
         parent.view.addSubview(container)
         container.addSubview(view)
         updateBackgroundCardEffect(snapshot: backgroundCardSnapshot)

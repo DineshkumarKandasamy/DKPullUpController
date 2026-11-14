@@ -42,6 +42,10 @@ extension DKPullUpController {
 
     /// Updates the live background card or captured image for the current sheet height.
     func updateBackgroundCardProgress(to height: CGFloat) {
+        updateBackgroundCardProgress(to: height, reduceMotion: UIAccessibility.isReduceMotionEnabled)
+    }
+
+    func updateBackgroundCardProgress(to height: CGFloat, reduceMotion: Bool) {
         guard configuration.isBackgroundCardEffectEnabled else { return }
         let maximumHeight = preferredPullUpSize.height
         let progress: CGFloat
@@ -52,12 +56,12 @@ extension DKPullUpController {
         }
 
         let configuredScale = configuration.backgroundCardScale
-        let targetScale = configuredScale.isFinite && configuredScale > 0 && configuredScale <= 1
+        let targetScale = !reduceMotion && configuredScale.isFinite && configuredScale > 0 && configuredScale <= 1
             ? configuredScale : 1
         let scale = 1 + (targetScale - 1) * progress
-        let offset = configuration.backgroundCardVerticalOffset.isFinite
+        let offset = !reduceMotion && configuration.backgroundCardVerticalOffset.isFinite
             ? configuration.backgroundCardVerticalOffset * progress : 0
-        let radius = configuration.backgroundCardCornerRadius.isFinite
+        let radius = !reduceMotion && configuration.backgroundCardCornerRadius.isFinite
             ? max(0, configuration.backgroundCardCornerRadius) * progress : 0
 
         switch configuration.backgroundCardContentMode {
@@ -66,12 +70,12 @@ extension DKPullUpController {
             let cardTransform = CGAffineTransform(translationX: 0, y: offset).scaledBy(x: scale, y: scale)
             contentView.transform = (backgroundCardOriginalTransform ?? .identity).concatenating(cardTransform)
             let originalRadius = backgroundCardOriginalCornerRadius ?? 0
-            let targetRadius = configuration.backgroundCardCornerRadius.isFinite
+            let targetRadius = !reduceMotion && configuration.backgroundCardCornerRadius.isFinite
                 ? max(0, configuration.backgroundCardCornerRadius) : 0
             contentView.layer.cornerRadius = originalRadius + (targetRadius - originalRadius) * progress
             contentView.layer.cornerCurve = .continuous
-            contentView.clipsToBounds = progress > 0
-            contentView.layer.masksToBounds = progress > 0
+            contentView.clipsToBounds = !reduceMotion && progress > 0
+            contentView.layer.masksToBounds = !reduceMotion && progress > 0
         case .snapshot:
             guard let snapshot = backgroundCardSnapshotView else { return }
             snapshot.isHidden = progress == 0

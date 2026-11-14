@@ -23,9 +23,14 @@ extension DKPullUpController {
         }
     }
 
-    /// Replaces invalid durations with zero and clamps negative durations to zero.
+    /// Validates a duration and disables movement animations when Reduce Motion is enabled.
     func validDuration(_ value: TimeInterval) -> TimeInterval {
-        value.isFinite ? max(0, value) : 0
+        validDuration(value, reduceMotion: UIAccessibility.isReduceMotionEnabled)
+    }
+
+    func validDuration(_ value: TimeInterval, reduceMotion: Bool) -> TimeInterval {
+        guard !reduceMotion else { return 0 }
+        return value.isFinite ? max(0, value) : 0
     }
 
     /// Applies configuration changes to the drag handle, gestures, and sheet layout.
@@ -84,6 +89,7 @@ extension DKPullUpController {
             visibleHeight = physics.clamp(visibleHeight)
         }
         lastLayoutWasSide = isSide
+        updateDefaultDragHandle()
         updatePanAvailability()
         updateBackgroundCardProgress(to: visibleHeight)
         view.frame = sheetFrame(in: host.bounds)
