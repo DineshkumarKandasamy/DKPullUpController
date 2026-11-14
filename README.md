@@ -31,7 +31,7 @@ For a project managed with a `Package.swift` manifest, add the package to `depen
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/DineshkumarKandasamy/DKPullUpController", from: "1.0.0")
+    .package(url: "https://github.com/DineshkumarKandasamy/DKPullUpController", from: "1.2.0")
 ],
 targets: [
     .target(
